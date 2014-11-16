@@ -46,9 +46,12 @@ public class Globals {
     public static final String NOT_RESP_REQ ="es.davidavila.passtochrome.notResponseRequest";
 
     //Direccion del servidor, puede cambiar con la entrada de un mensaje.
-    private static String SERVER_IP = "193.147.49.34";
-    public static String SERVER_DIR = "http://"+SERVER_IP+":8080";
+    private static final String SERVER_IP = "192.168.1.40";
+    public static final String SERVER_DIR = "http://"+SERVER_IP+":8080";
 
     //Constantes para pasar parametros por los intents
-    public static String INTENT_REQ_ID = "reqId_INTENT";
+    public static final String INTENT_REQ_ID = "reqId_INTENT";
+    public static final String INTENT_DOM = "dom_INTENT";
+
+    public static int nveces = 0;
 }

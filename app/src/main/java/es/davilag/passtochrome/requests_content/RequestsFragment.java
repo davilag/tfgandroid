@@ -5,16 +5,13 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,22 +24,22 @@ import es.davilag.passtochrome.R;
  * Created by davilag on 5/11/14.
  */
 public class RequestsFragment extends Fragment {
+    private static RecyclerCustomAdapter RVadapter;
+    private static RecyclerView rv;
+    private static RequestsFragment fragment;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         SharedPreferences prefs = this.getActivity().getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
-        ArrayList<RequestItem> list = new ArrayList<RequestItem>();
         Set<String> keys = prefs.getStringSet(Globals.REQUEST_SET,null);
         Log.e(Globals.TAG,"Entra en el framgent");
-        if(keys!=null && keys.size()!=0){
-            LinearLayout rootView = (LinearLayout) inflater.inflate(R.layout.fragment_content_requests, container, false);
-            ListView lv = (ListView)rootView.findViewById(R.id.list_requests);
-            final Context c = rootView.getContext();
-            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Toast.makeText(c, "He tocado algo", Toast.LENGTH_SHORT).show();
-                }
-            });
+
+        if(keys!=null && keys.size()>0){
+            View rootView = inflater.inflate(R.layout.fragment_content_requests, container, false);
+            rv = (RecyclerView) rootView.findViewById(R.id.my_recycler_view);
+            rv.setHasFixedSize(true);
+            RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+            rv.setLayoutManager(mLayoutManager);
+            ArrayList<RequestItem> contenido = new ArrayList<RequestItem>();
             Log.e(Globals.TAG,"Es distinto de null");
             Log.e(Globals.TAG,"El tamaño es: "+keys.size());
             Iterator<String> it = keys.iterator();
@@ -50,19 +47,23 @@ public class RequestsFragment extends Fragment {
                 String key = it.next();
                 String domain = prefs.getString(key,null);
                 if(domain!=null){
-                    list.add(new RequestItem(domain,key));
+                    contenido.add(new RequestItem(domain,key));
                 }
             }
-            ListRequestsAdapter adapter = new ListRequestsAdapter(c,R.layout.content_request_row,list);
-            lv.setAdapter(adapter);
-            return rootView;
-        }else {
-            RelativeLayout rootView = (RelativeLayout) inflater.inflate(R.layout.fragment_empty, container, false);
+            RVadapter = new RecyclerCustomAdapter(getActivity(),contenido);
+            rv.setAdapter(RVadapter);
+            return  rootView;
+        }else{
+            View rootView = inflater.inflate(R.layout.fragment_empty,container,false);
             TextView tv = (TextView) rootView.findViewById(R.id.textEmpty);
             Typeface tf = Typeface.createFromAsset(rootView.getContext().getAssets(), "Roboto-Thin.ttf");
             tv.setTypeface(tf);
-            return rootView;
+            return  rootView;
         }
+
+    }
+
+    public static void update(){
 
     }
 }

@@ -29,10 +29,12 @@ public class ServerMessage {
         context.sendBroadcast(i);
     }
     public static boolean  sendRegisterMessage(String mail,String regId, Context context) throws Exception {
-        URL obj = new URL(Globals.SERVER_DIR+"/register");
+        URL obj = new URL(Globals.SERVER_DIR+"/PTC/register");
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("POST");
-        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("Content-Type","application/json");
+        con.setDoOutput(true);
+        con.setDoInput(true);
         ObjectMapper om = new ObjectMapper();
         Message m = new Message();
         m.addData(Globals.MSG_ACTION,Globals.ACTION_REGISTER);
@@ -62,7 +64,7 @@ public class ServerMessage {
     }
 
     public static boolean sendResponseMessage(String mail, String dominio, String pass, String regId,String reqId) throws Exception{
-        URL obj = new URL(Globals.SERVER_DIR+"/response");
+        URL obj = new URL(Globals.SERVER_DIR+"/PTC/response");
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json");

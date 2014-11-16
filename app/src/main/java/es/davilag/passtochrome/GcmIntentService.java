@@ -27,6 +27,8 @@ public class GcmIntentService extends IntentService {
      */
     public static final int NOTIFICATION_ID = 1;
     private NotificationManager mNotificationManager;
+    private static int nveces = 0;
+
 
     public GcmIntentService() {
         super("GcmIntentService");
@@ -71,7 +73,8 @@ public class GcmIntentService extends IntentService {
     }
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.v(Globals.TAG, "Llega algo");
+        Log.v(Globals.TAG, "Llega algo: "+nveces);
+        nveces++;
         Bundle extras = intent.getExtras();
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         String messageType = gcm.getMessageType(intent);
@@ -115,6 +118,8 @@ public class GcmIntentService extends IntentService {
                                 Log.v(Globals.TAG,key+": "+prefs.getString(key,""));
                             }
                             Intent i = new Intent(Globals.REFRESH_CONTENT);
+                            i.putExtra(Globals.INTENT_REQ_ID,reqId);
+                            i.putExtra(Globals.INTENT_DOM,domain);
                             sendBroadcast(i);
                         }
                     }else if(action.equals(Globals.ACTION_CLEARNOTIF)){

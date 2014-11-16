@@ -8,7 +8,7 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
 
     </style>
-    <style name="Toolbar" parent="Base.Theme.AppCompat.Light.DarkActionBar">
+    <style name="Toolbar" parent="Base.V21.Theme.AppCompat.Light">
         <item name="windowActionBar">false</item>
         <item name="android:colorPrimaryDark">#e65100</item>
         <item name="color">@android:color/white</item>
