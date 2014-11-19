@@ -48,6 +48,7 @@ public class CancelService extends IntentService {
             editor.putStringSet(Globals.REQUEST_SET,keys);
             editor.commit();
             Intent i = new Intent(Globals.REFRESH_CONTENT);
+            i.putExtra(Globals.ACTION_BROAD,"");
             sendBroadcast(i);
         }
     }

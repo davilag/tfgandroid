@@ -68,7 +68,7 @@ public class GcmIntentService extends IntentService {
                 .setAutoCancel(true)
                 .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                 .addAction(R.drawable.ic_reply_white_24dp,"Enviar",piRes)
-                .addAction(R.drawable.ic_clear_white_24dp,"Cancelar",piNotRes);
+                .addAction(R.drawable.ic_clear_white_24dp,"Cancelar",piNotRes).setPriority(NotificationCompat.PRIORITY_HIGH);
         mNotificationManager.notify(NOTIFICATION_ID,builder.build());
     }
     @Override
@@ -118,8 +118,6 @@ public class GcmIntentService extends IntentService {
                                 Log.v(Globals.TAG,key+": "+prefs.getString(key,""));
                             }
                             Intent i = new Intent(Globals.REFRESH_CONTENT);
-                            i.putExtra(Globals.INTENT_REQ_ID,reqId);
-                            i.putExtra(Globals.INTENT_DOM,domain);
                             sendBroadcast(i);
                         }
                     }else if(action.equals(Globals.ACTION_CLEARNOTIF)){
@@ -134,6 +132,8 @@ public class GcmIntentService extends IntentService {
                             editor.remove(reqId);
                         }
                         editor.commit();
+                        Intent i = new Intent(Globals.REFRESH_CONTENT);
+                        sendBroadcast(i);
                         clearNotification();
                     }
                 }

@@ -110,7 +110,7 @@ public class RecyclerCustomAdapter extends RecyclerView.Adapter<RecyclerCustomAd
         }
     }
 
-    public void addItem( RequestItem content){
+    public void addItem(RequestItem content){
         int position = mDataset.size();
         mDataset.add(position, content);
         notifyItemInserted(position);

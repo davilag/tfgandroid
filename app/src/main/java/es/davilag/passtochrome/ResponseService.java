@@ -109,6 +109,7 @@ public class ResponseService extends IntentService{
         }
         clearNotification();
         Intent i = new Intent(Globals.REFRESH_CONTENT);
+        i.putExtra(Globals.ACTION_BROAD,"");
         sendBroadcast(i);
     }
 }

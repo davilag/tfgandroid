@@ -22,6 +22,7 @@ public class Globals {
     public static final String MAIL = "mail";
     public static final String MSG_REG_ID = "reg_id";
     public static final String REQUEST_SET = "requests_set";
+    public static final String URLS_SAVED = "urls_saved";
 
     //Constantes para los campos de los mensajes con el servidor GCM
     public static final String MSG_ACTION="action";
@@ -39,11 +40,13 @@ public class Globals {
     public static final String ACTION_REQUEST = "request";
     public static final String ACTION_RESPONSE = "response";
     public static final String ACTION_CLEARNOTIF = "clear_notification";
+    public static final String ACTION_GET_URLS = "get_urls";
 
     //Constantes para eventos broadcast
     public static final String REFRESH_CONTENT = "es.davidavila.passtochrome.refreshContent";
     public static final String RESP_REQ = "es.davidavila.passtochrome.responseRequest";
     public static final String NOT_RESP_REQ ="es.davidavila.passtochrome.notResponseRequest";
+    public static final String ACTION_BROAD = "es.davidavila.actionBroadcastRefresh";
 
     //Direccion del servidor, puede cambiar con la entrada de un mensaje.
     private static final String SERVER_IP = "192.168.1.40";
