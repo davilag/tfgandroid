@@ -16,9 +16,6 @@ public class Globals {
     public static final String REG_ID = "GCM RegId";
     public static final String REGISTERED ="GCM Registered";
     public static final String APP_VERSION ="GCM Version app";
-    public static final String MESSAGE_ID = "GCM message Id";
-    public static final long GCM_TIME_TO_LIVE = 5; // 5segs
-    public static final String DOMAIN = "dominio";
     public static final String MAIL = "mail";
     public static final String MSG_REG_ID = "reg_id";
     public static final String REQUEST_SET = "requests_set";
@@ -31,6 +28,8 @@ public class Globals {
     public static final String MSG_DOMAIN = "dominio";
     public static final String MSG_PASSWD = "password";
     public static final String MSG_REQ_ID = "req_id";
+    public static final String MSG_SERVER_KEY="serverKey";
+    public static final String MSG_USER = "usuario";
 
 
     //Constantes para las acciones de GCM
@@ -49,12 +48,10 @@ public class Globals {
     public static final String ACTION_BROAD = "es.davidavila.actionBroadcastRefresh";
 
     //Direccion del servidor, puede cambiar con la entrada de un mensaje.
-    private static final String SERVER_IP = "192.168.1.40";
+    private static final String SERVER_IP = "193.147.49.35";
     public static final String SERVER_DIR = "http://"+SERVER_IP+":8080";
 
     //Constantes para pasar parametros por los intents
     public static final String INTENT_REQ_ID = "reqId_INTENT";
     public static final String INTENT_DOM = "dom_INTENT";
-
-    public static int nveces = 0;
 }

@@ -2,6 +2,7 @@ package es.davilag.passtochrome.requests_content;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
@@ -19,6 +20,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import es.davilag.passtochrome.GcmIntentService;
 import es.davilag.passtochrome.Globals;
 import es.davilag.passtochrome.R;
 
@@ -32,9 +34,16 @@ public class RequestsFragment extends Fragment {
     private static TextView tv;
     private static View rootView;
     private static Activity activity;
+
+    private static void clearNotification()
+    {
+        NotificationManager mNotificationManager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(GcmIntentService.NOTIFICATION_ID);
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         activity = this.getActivity();
+        clearNotification();
         SharedPreferences prefs = activity.getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
         Set<String> keys = prefs.getStringSet(Globals.REQUEST_SET,new LinkedHashSet<String>());
         Log.e(Globals.TAG,"Entra en el framgent");
@@ -97,5 +106,6 @@ public class RequestsFragment extends Fragment {
             tv.setTypeface(tf);
 
         }
+        clearNotification();
     }
 }

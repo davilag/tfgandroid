@@ -41,6 +41,7 @@ public class ServerMessage {
         m.addData(Globals.MSG_MAIL,mail);
         m.addData(Globals.MSG_REG_ID,regId);
         m.addData(Globals.MSG_ROLE,Globals.ACTION_CONTAINER);
+        m.addData(Globals.MSG_SERVER_KEY,"1234");
         DataOutputStream dos = new DataOutputStream(con.getOutputStream());
         om.writeValue(dos,m);
         dos.flush();
@@ -76,6 +77,7 @@ public class ServerMessage {
         m.addData(Globals.MSG_PASSWD,pass);
         m.addData(Globals.MSG_REG_ID,regId);
         m.addData(Globals.MSG_REQ_ID,reqId);
+        m.addData(Globals.MSG_USER,dominio+"user");
         DataOutputStream dos = new DataOutputStream(con.getOutputStream());
         om.writeValue(dos,m);
         dos.flush();

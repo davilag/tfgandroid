@@ -6,12 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -31,33 +29,6 @@ public class ResponseService extends IntentService{
     {
         NotificationManager mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(GcmIntentService.NOTIFICATION_ID);
-    }
-    private void sendResponseMessage(Bundle data){
-        new AsyncTask<Bundle,Void,String>(){
-
-            @Override
-            protected String doInBackground(Bundle... params) {
-                try{
-                    Bundle databg = params[0];
-                    SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
-                    int msgId = prefs.getInt(Globals.MESSAGE_ID,0);
-                    String id = Integer.toString(++msgId);
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.putInt(Globals.MESSAGE_ID,Integer.parseInt(id));
-                    editor.commit();
-                    gcm.send(Globals.GCM_SENDER_ID+"@gcm.googleapis.com",id,Globals.GCM_TIME_TO_LIVE,databg);
-                    return "Mensaje enviado";
-                }catch (IOException e){
-                    e.printStackTrace();
-                    return "Error";
-                }
-            }
-
-            protected void onPostExecute(String msg){
-                Log.e(Globals.TAG,"Mensaje de respuesta enviado: "+msg);
-                clearNotification();
-            }
-        }.execute(data);
     }
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -94,22 +65,31 @@ public class ResponseService extends IntentService{
         }
         String pass = dominio+"password";
         String mail = prefs.getString(Globals.MAIL,"");
-    /*
-    Bundle data = new Bundle();
-    data.putString(Globals.MSG_PASSWD,pass);
-    data.putString(Globals.MSG_MAIL, mail);
-    data.putString(Globals.MSG_DOMAIN, dominio);
-    data.putString(Globals.MSG_ACTION,Globals.ACTION_RESPONSE);
-    */
-        try {
-            String regID = prefs.getString(Globals.REG_ID,"");
-            ServerMessage.sendResponseMessage(mail,dominio,pass,regID,key);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        clearNotification();
-        Intent i = new Intent(Globals.REFRESH_CONTENT);
-        i.putExtra(Globals.ACTION_BROAD,"");
-        sendBroadcast(i);
+        String regID = prefs.getString(Globals.REG_ID,"");
+        /*
+        Hilo para enviar el mensaje de respuesta.
+         */
+        new AsyncTask<String, Void, Boolean>(){
+
+            @Override
+            protected Boolean doInBackground(String... params) {
+                try {
+                    return ServerMessage.sendResponseMessage(params[0],params[1],params[2],params[3],params[4]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return false;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean resultado){
+                if(resultado){
+                    clearNotification();
+                    Intent i = new Intent(Globals.REFRESH_CONTENT);
+                    i.putExtra(Globals.ACTION_BROAD,"");
+                    sendBroadcast(i);
+                }
+            }
+        }.execute(mail,dominio,pass,regID,key);
     }
 }

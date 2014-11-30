@@ -116,6 +116,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
         if(amIRegistered()){
             Intent i = new Intent(this, ToolbarActivity.class);
             startActivity(i);
+            finish();
         }
     }
     public void setRegisterDisabled(){
