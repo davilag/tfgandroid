@@ -16,6 +16,7 @@ import es.davilag.passtochrome.Globals;
 public class PTCDbHelper extends SQLiteOpenHelper {
     private static final String TEXT_TYPE = " TEXT";
     private static final String COMMA_SEP = ",";
+    private static final String COMILLA = "\"";
     private static final String SQL_CREATE_ENTRIES_REQUESTS =
             "CREATE TABLE "+ PTCDbContract.RequestTable.TABLE_NAME+" (" +
                     PTCDbContract.RequestTable.COLUMN_NAME_ID+TEXT_TYPE+" PRIMARY KEY, "+
@@ -47,10 +48,14 @@ public class PTCDbHelper extends SQLiteOpenHelper {
     }
 
     public void addRequest(SQLiteDatabase db, Request r){
+        Log.v(Globals.TAG,"He ejecutado en la bd: INSERT INTO "+ PTCDbContract.RequestTable.TABLE_NAME+"("+
+                PTCDbContract.RequestTable.COLUMN_NAME_ID+COMMA_SEP+
+                PTCDbContract.RequestTable.COLUMN_NAME_DOM+")"+
+                "VALUES("+COMILLA+r.getReqId()+COMILLA+COMMA_SEP+COMILLA+r.getDom()+COMILLA+");");
         db.execSQL("INSERT INTO "+ PTCDbContract.RequestTable.TABLE_NAME+"("+
                         PTCDbContract.RequestTable.COLUMN_NAME_ID+COMMA_SEP+
                         PTCDbContract.RequestTable.COLUMN_NAME_DOM+")"+
-                        "VALUES("+r.getReqId()+COMMA_SEP+r.getDom()+");");
+                        "VALUES("+COMILLA+r.getReqId()+COMILLA+COMMA_SEP+COMILLA+r.getDom()+COMILLA+");");
     }
 
     public ArrayList<Request> getRequests(SQLiteDatabase db){
@@ -82,5 +87,27 @@ public class PTCDbHelper extends SQLiteOpenHelper {
             }
         }
         return requests;
+    }
+
+    public String getRequestDom(SQLiteDatabase db, String reqId){
+        String dom = null;
+        Log.v(Globals.TAG,"Voy a ejecutar: SELECT "+ PTCDbContract.RequestTable.COLUMN_NAME_DOM +
+                                                 " FROM "+PTCDbContract.RequestTable.TABLE_NAME +
+                                                 " WHERE "+ PTCDbContract.RequestTable.COLUMN_NAME_ID+"="+COMILLA+reqId+COMILLA);
+        Cursor c = db.rawQuery("SELECT "+ PTCDbContract.RequestTable.COLUMN_NAME_DOM+
+                                " FROM "+PTCDbContract.RequestTable.TABLE_NAME+
+                                " WHERE "+ PTCDbContract.RequestTable.COLUMN_NAME_ID+"="+COMILLA+reqId+COMILLA,new String[]{});
+        if(c!=null){
+            if(c.moveToNext()){
+                dom = c.getString(0);
+            }
+        }
+        Log.v(Globals.TAG,"El dominio es: "+dom);
+        return dom;
+    }
+
+    public void removeRequest(SQLiteDatabase db, String reqId){
+        Log.v(Globals.TAG,"Voy a ejecutar:DELETE FROM "+ PTCDbContract.RequestTable.TABLE_NAME+" WHERE "+ PTCDbContract.RequestTable.COLUMN_NAME_ID+"="+COMILLA+reqId+COMILLA+";");
+        db.execSQL("DELETE FROM "+ PTCDbContract.RequestTable.TABLE_NAME+" WHERE "+ PTCDbContract.RequestTable.COLUMN_NAME_ID+"="+COMILLA+reqId+COMILLA+";");
     }
 }

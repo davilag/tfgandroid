@@ -1,5 +1,7 @@
 package es.davilag.passtochrome;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -50,6 +52,12 @@ public class ToolbarActivity extends ActionBarActivity {
                 urls.add("url"+i);
             }
         }
+        Fragment content = new RequestsFragment();
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        ft.replace(R.id.content_fragment, content);
+        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        ft.addToBackStack(null);
+        ft.commit();
     }
 
 

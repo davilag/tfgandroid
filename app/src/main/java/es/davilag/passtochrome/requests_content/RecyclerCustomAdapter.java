@@ -14,6 +14,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import es.davilag.passtochrome.R;
+import es.davilag.passtochrome.database.Request;
 
 /**
  * Created by davilag on 18/08/14.
@@ -21,11 +22,11 @@ import es.davilag.passtochrome.R;
 public class RecyclerCustomAdapter extends RecyclerView.Adapter<RecyclerCustomAdapter.ViewHolder> implements View.OnClickListener,
         View.OnLongClickListener{
 
-    private ArrayList<RequestItem> mDataset;
+    private ArrayList<Request> mDataset;
     private static Context sContext;
 
     // Adapter's Constructor
-    public RecyclerCustomAdapter(Context context, ArrayList<RequestItem> myDataset) {
+    public RecyclerCustomAdapter(Context context, ArrayList<Request> myDataset) {
         mDataset = myDataset;
         sContext = context;
     }
@@ -52,7 +53,7 @@ public class RecyclerCustomAdapter extends RecyclerView.Adapter<RecyclerCustomAd
     public void onBindViewHolder(ViewHolder holder, int position) {
 
         // Get element from your dataset at this position and set the text for the specified element
-        holder.mNameTextView.setText(mDataset.get(position).getDominio());
+        holder.mNameTextView.setText(mDataset.get(position).getDom());
         holder.responseButton.setOnClickListener(new ResponseClickListener(sContext,mDataset.get(position).getReqId()));
         holder.cancelButton.setOnClickListener(new CancelClickListener(sContext,mDataset.get(position).getReqId()));
     }
@@ -110,7 +111,7 @@ public class RecyclerCustomAdapter extends RecyclerView.Adapter<RecyclerCustomAd
         }
     }
 
-    public void addItem(RequestItem content){
+    public void addItem(Request content){
         int position = mDataset.size();
         mDataset.add(position, content);
         notifyItemInserted(position);

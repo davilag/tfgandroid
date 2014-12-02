@@ -48,7 +48,7 @@ public class Globals {
     public static final String ACTION_BROAD = "es.davidavila.actionBroadcastRefresh";
 
     //Direccion del servidor, puede cambiar con la entrada de un mensaje.
-    private static final String SERVER_IP = "193.147.49.35";
+    private static final String SERVER_IP = "193.147.49.34";
     public static final String SERVER_DIR = "http://"+SERVER_IP+":8080";
 
     //Constantes para pasar parametros por los intents

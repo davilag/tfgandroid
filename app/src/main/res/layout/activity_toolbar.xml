@@ -24,15 +24,9 @@
 
         <!-- The main content view -->
         <FrameLayout
-            android:id="@+id/content_container"
+            android:id="@+id/content_fragment"
             android:layout_height="match_parent"
             android:layout_width="match_parent">
-            <fragment android:id="@+id/content_fragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="start"
-                android:name="es.davilag.passtochrome.requests_content.RequestsFragment"
-                tools:layout="@layout/fragment_navigation_drawer"/>
 
         </FrameLayout>
 

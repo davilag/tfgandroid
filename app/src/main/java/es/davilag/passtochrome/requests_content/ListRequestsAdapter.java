@@ -12,18 +12,19 @@ import android.widget.TextView;
 import java.util.List;
 
 import es.davilag.passtochrome.R;
+import es.davilag.passtochrome.database.Request;
 
 /**
  * Created by davilag on 5/11/14.
  */
-public class ListRequestsAdapter extends ArrayAdapter<RequestItem> {
+public class ListRequestsAdapter extends ArrayAdapter<Request> {
 
     Context context;
-    List<RequestItem> drawerItemList;
+    List<Request> drawerItemList;
     int layoutResID;
 
     public ListRequestsAdapter(Context context, int layoutResourceID,
-                             List<RequestItem> listItems) {
+                             List<Request> listItems) {
         super(context, layoutResourceID, listItems);
         this.context = context;
         this.drawerItemList = listItems;
@@ -56,9 +57,9 @@ public class ListRequestsAdapter extends ArrayAdapter<RequestItem> {
 
         }
 
-        RequestItem dItem = this.drawerItemList.get(position);
+        Request dItem = this.drawerItemList.get(position);
 
-        listRequestItemHolder.ItemName.setText(dItem.getDominio());
+        listRequestItemHolder.ItemName.setText(dItem.getDom());
         Typeface tf = Typeface.createFromAsset(context.getAssets(), "Roboto-Medium.ttf");
         listRequestItemHolder.ItemName.setTypeface(tf);
         listRequestItemHolder.buttonResponse.setOnClickListener(new ResponseClickListener(context,dItem.getReqId()));

@@ -40,6 +40,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.davilag.passtochrome.database.BaseDatosWrapper;
+
 
 /**
 Activity que se lanza cuando se va a abrir la aplicación pero que lanzará la siguiente
@@ -382,6 +384,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
             String regId = prefs.getString(Globals.REG_ID,"");
             if(regId!="") {
                 try {
+                    BaseDatosWrapper.resetBaseDatos(context);
                     return ServerMessage.sendRegisterMessage(mEmail, regId, context);
                 } catch (Exception e) {
                     e.printStackTrace();

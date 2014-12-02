@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
@@ -13,9 +14,12 @@ import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Set;
+
+import es.davilag.passtochrome.database.BaseDatosWrapper;
+import es.davilag.passtochrome.database.Request;
 
 /**
  * Servicio que se ejecuta cuando llega un mensaje de GCM para analizarlo.
@@ -49,14 +53,19 @@ public class GcmIntentService extends IntentService {
         editor.commit();
     }
 
-    private void sendRequestActionNotification(String domain){
-        Intent responseIntent = new Intent(this, ResponseService.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        responseIntent.setAction(Globals.RESP_REQ);
+    private void sendRequestActionNotification(String domain, String reqId){
+        Intent responseIntent = new Intent(this, ResponseService.class);
+        responseIntent.putExtra(Globals.INTENT_REQ_ID,reqId);
+        responseIntent.setAction(reqId); //Hay que poner para cada vez que salga una notificacion una accion diferente o reciclará el primer intent que se ejecute.
         PendingIntent piRes = PendingIntent.getService(this,0,responseIntent,0);
 
         Intent noResponseIntent = new Intent (this,CancelService.class);
-        noResponseIntent.setAction(Globals.NOT_RESP_REQ);
+        noResponseIntent.putExtra(Globals.INTENT_REQ_ID,reqId);
+        noResponseIntent.setAction(reqId);
         PendingIntent piNotRes = PendingIntent.getService(this, 0, noResponseIntent,0);
+
+        Intent requestsIntent = new Intent(this, ToolbarActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);;
+        PendingIntent piRequests = PendingIntent.getActivity(this, 0, requestsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
@@ -68,7 +77,8 @@ public class GcmIntentService extends IntentService {
                 .setAutoCancel(true)
                 .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                 .addAction(R.drawable.ic_reply_white_24dp,"Enviar",piRes)
-                .addAction(R.drawable.ic_clear_white_24dp, "Cancelar", piNotRes).setPriority(NotificationCompat.PRIORITY_HIGH);
+                .addAction(R.drawable.ic_clear_white_24dp, "Cancelar", piNotRes).setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(piRequests);
         mNotificationManager.notify(NOTIFICATION_ID,builder.build());
     }
 
@@ -81,7 +91,7 @@ public class GcmIntentService extends IntentService {
     }
 
     private void sendRequestNotification(String[] domains) {
-        Intent requestsIntent = new Intent(this, ToolbarActivity.class);
+        Intent requestsIntent = new Intent(this, ToolbarActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);;
         PendingIntent piRequests = PendingIntent.getActivity(this, 0, requestsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -99,53 +109,43 @@ public class GcmIntentService extends IntentService {
     private void handleRequest(Bundle bundle){
         Log.v(Globals.TAG,"Llega una peticion");
         String domain = bundle.getString(Globals.MSG_DOMAIN);
-        String reqId = bundle.getString(Globals.MSG_REQ_ID);
+        final String reqId = bundle.getString(Globals.MSG_REQ_ID);
+        Log.v(Globals.TAG,"El reqId es: "+reqId);
         if(domain!=null) {
-            SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
-            Set<String> reqSet = prefs.getStringSet(Globals.REQUEST_SET,null);
-            if(reqSet==null){
-                Log.v(Globals.TAG,"El set de requests es null");
-                reqSet = new LinkedHashSet<String>();
-            }
-            reqSet.add(reqId);
-            Iterator<String> iterator = reqSet.iterator();
-            editor.putString(reqId,domain);
-            editor.putStringSet(Globals.REQUEST_SET,reqSet);
-            editor.commit();
-            Log.v(Globals.TAG,"El set que voy a guardar es:");
-            while(iterator.hasNext()){
-                String key = iterator.next();
-                Log.v(Globals.TAG,key+": "+prefs.getString(key,""));
-            }
-            Intent intent = new Intent(Globals.REFRESH_CONTENT);
-            sendBroadcast(intent);
-            if(reqSet.size()>1){
-                String[] domains = new String[reqSet.size()];
-                int i = 0;
-                for(String s: reqSet){
-                    domains[i] = prefs.getString(s,"");
-                    i++;
+            new AsyncTask<String,Void,String[]>(){
+
+                @Override
+                protected String[] doInBackground(String... params) {
+                    BaseDatosWrapper.insertRequest(getApplicationContext(),new Request(params[0],params[1]));
+                    ArrayList<Request> requests = BaseDatosWrapper.getRequests(getApplicationContext());
+                    String[] domains = new String[requests.size()];
+                    int i = 0;
+                    for(Request r: requests){
+                        domains[i] = r.getDom();
+                        i++;
+                    }
+                    return domains;
                 }
-                sendRequestNotification(domains);
-            }else{
-                sendRequestActionNotification(domain);
-            }
+                @Override
+                protected void onPostExecute(String[] doms)
+                {
+                    if(doms.length>1){
+                        sendRequestNotification(doms);
+                    }else{
+                        Log.v(Globals.TAG,"El reqId que le voy a pasar a la notif es: "+reqId);
+                        sendRequestActionNotification(doms[0],reqId);
+                    }
+                    Intent intent = new Intent(Globals.REFRESH_CONTENT);
+                    sendBroadcast(intent);
+                }
+            }.execute(reqId,domain);
         }
     }
 
     private void handleClearNotification(Bundle bundle){
         Log.v(Globals.TAG,"Ha llegado un mensaje para borrar la notificacion");
-        SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
         String reqId = bundle.getString(Globals.MSG_REQ_ID);
-        Set<String> reqSet = prefs.getStringSet(Globals.REQUEST_SET,null);
-        if(reqSet!=null){
-            reqSet.remove(reqId);
-            editor.putStringSet(Globals.REQUEST_SET,reqSet);
-            editor.remove(reqId);
-        }
-        editor.commit();
+        BaseDatosWrapper.removeRequest(getApplicationContext(),reqId);
         Intent i = new Intent(Globals.REFRESH_CONTENT);
         sendBroadcast(i);
         clearNotification();

@@ -13,5 +13,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>
     <string name="reqs_empty">No hay peticiones pendientes.</string>
+    <string name="cont_empty">No hay contraseñas guardadas.</string>
     <string name="pass_empty">No hay contraseñas guardadas.</string>
 </resources>

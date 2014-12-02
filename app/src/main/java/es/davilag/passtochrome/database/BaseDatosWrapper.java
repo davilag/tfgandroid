@@ -8,8 +8,8 @@ import java.util.ArrayList;
 /**
  * Created by davilag on 29/11/14.
  */
-public class BaseDatos {
-    public BaseDatos(){
+public class BaseDatosWrapper {
+    public BaseDatosWrapper(){
     }
 
     public static void resetBaseDatos(Context c){
@@ -32,5 +32,20 @@ public class BaseDatos {
         ArrayList<Request> requests = helper.getRequests(db);
         db.close();
         return requests;
+    }
+
+    public static String getAndRemoveRequestDomain(Context c, String reqId){
+        PTCDbHelper helper = new PTCDbHelper(c);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        String dom = helper.getRequestDom(db, reqId);
+        helper.removeRequest(db,reqId);
+        db.close();
+        return dom;
+    }
+    public static void removeRequest(Context c, String reqId){
+        PTCDbHelper helper = new PTCDbHelper(c);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        helper.removeRequest(db,reqId);
+        db.close();
     }
 }
