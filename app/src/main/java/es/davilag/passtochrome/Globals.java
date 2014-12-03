@@ -54,4 +54,10 @@ public class Globals {
     //Constantes para pasar parametros por los intents
     public static final String INTENT_REQ_ID = "reqId_INTENT";
     public static final String INTENT_DOM = "dom_INTENT";
+
+    public static final String INDEX_FRAGMENT_DRAWER = "indexfragment";
+
+    //Constantes para el titulo de la toolbar
+    public static final String TITLE_CONTENEDOR = "Contenedor";
+    public static final String TITLE_PETICIONES = "Peticiones";
 }

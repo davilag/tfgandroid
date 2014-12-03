@@ -3,7 +3,6 @@ package es.davilag.passtochrome.requests_content;
 import android.content.Context;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +18,7 @@ import es.davilag.passtochrome.database.Request;
 /**
  * Created by davilag on 18/08/14.
  */
-public class RecyclerCustomAdapter extends RecyclerView.Adapter<RecyclerCustomAdapter.ViewHolder> implements View.OnClickListener,
-        View.OnLongClickListener{
+public class RecyclerCustomAdapter extends RecyclerView.Adapter<RecyclerCustomAdapter.ViewHolder> implements View.OnClickListener{
 
     private ArrayList<Request> mDataset;
     private static Context sContext;
@@ -42,8 +40,6 @@ public class RecyclerCustomAdapter extends RecyclerView.Adapter<RecyclerCustomAd
         // Set the view to the ViewHolder
         ViewHolder holder = new ViewHolder(v);
         holder.row.setOnClickListener(RecyclerCustomAdapter.this);
-        holder.row.setOnLongClickListener(RecyclerCustomAdapter.this);
-
         holder.row.setTag(holder);
         return holder;
     }
@@ -71,24 +67,6 @@ public class RecyclerCustomAdapter extends RecyclerView.Adapter<RecyclerCustomAd
         if (view.getId() == holder.row.getId()) {
             Toast.makeText(sContext, holder.mNameTextView.getText(), Toast.LENGTH_SHORT).show();
         }
-    }
-
-    // Implement OnLongClick listener. Long Clicked items is removed from list.
-    @Override
-    public boolean onLongClick(View view) {
-        ViewHolder holder = (ViewHolder) view.getTag();
-        Log.v("Adapter",holder.row.getId()+"");
-        Log.v("Adapter",view.getId()+"");
-        if (view.getId() == holder.row.getId()) {
-            mDataset.remove(holder.getPosition());
-
-            // Call this method to refresh the list and display the "updated" list
-            notifyDataSetChanged();
-
-            Toast.makeText(sContext, "Item " + holder.mNameTextView.getText() + " has been removed from list",
-                    Toast.LENGTH_SHORT).show();
-        }
-        return false;
     }
 
     // Create the ViewHolder class to keep references to your views
