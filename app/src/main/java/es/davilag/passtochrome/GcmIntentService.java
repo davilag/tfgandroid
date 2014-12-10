@@ -38,7 +38,11 @@ public class GcmIntentService extends IntentService {
         super("GcmIntentService");
     }
 
-
+    private boolean correctServerKey(String serverKey){
+        SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
+        String serverKeyAlm = prefs.getString(Globals.SERVER_KEY,"");
+        return serverKey.equals(serverKeyAlm);
+    }
     /*
     Deja la aplicacion en este movil como registrada, guardando
     el email con el que se ha registrado el usuario y no dejando
@@ -54,17 +58,29 @@ public class GcmIntentService extends IntentService {
     }
 
     private void sendRequestActionNotification(String domain, String reqId){
-        Intent responseIntent = new Intent(this, ResponseService.class);
-        responseIntent.putExtra(Globals.INTENT_REQ_ID,reqId);
-        responseIntent.setAction(reqId); //Hay que poner para cada vez que salga una notificacion una accion diferente o reciclará el primer intent que se ejecute.
-        PendingIntent piRes = PendingIntent.getService(this,0,responseIntent,0);
+        String[] users = BaseDatosWrapper.getUsers(getApplicationContext(),domain);
+        Intent responseIntent;
+        PendingIntent piRes;
+        if(users.length>1){
+            responseIntent = new Intent(this,ElegirUserActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);;
+            responseIntent.putExtra(Globals.INTENT_DOM,domain);
+            responseIntent.putExtra(Globals.INTENT_USERS_DOM,users);
+            responseIntent.putExtra(Globals.INTENT_REQ_ID,reqId);
+            piRes = PendingIntent.getActivity(this,0,responseIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+        }else{
+            responseIntent= new Intent(this, ResponseService.class);
+            responseIntent.putExtra(Globals.INTENT_REQ_ID,reqId);
+            responseIntent.setAction(reqId); //Hay que poner para cada vez que salga una notificacion una accion diferente o reciclará el primer intent que se ejecute.
+            piRes = PendingIntent.getService(this,0,responseIntent,0);
+        }
 
         Intent noResponseIntent = new Intent (this,CancelService.class);
         noResponseIntent.putExtra(Globals.INTENT_REQ_ID,reqId);
         noResponseIntent.setAction(reqId);
         PendingIntent piNotRes = PendingIntent.getService(this, 0, noResponseIntent,0);
 
-        Intent requestsIntent = new Intent(this, ToolbarActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);;
+        Intent requestsIntent = new Intent(this, ToolbarActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        requestsIntent.putExtra(Globals.INTENT_CONTENT,getResources().getString(R.string.requests_title));
         PendingIntent piRequests = PendingIntent.getActivity(this, 0, requestsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -93,6 +109,7 @@ public class GcmIntentService extends IntentService {
     private void sendRequestNotification(String[] domains) {
         Intent requestsIntent = new Intent(this, ToolbarActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);;
         PendingIntent piRequests = PendingIntent.getActivity(this, 0, requestsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        requestsIntent.putExtra(Globals.INTENT_CONTENT,getResources().getString(R.string.requests_title));
 
         mNotificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
@@ -112,33 +129,48 @@ public class GcmIntentService extends IntentService {
         final String reqId = bundle.getString(Globals.MSG_REQ_ID);
         Log.v(Globals.TAG,"El reqId es: "+reqId);
         if(domain!=null) {
-            new AsyncTask<String,Void,String[]>(){
+            String[] users = BaseDatosWrapper.getUsers(getApplicationContext(),domain);//En un principio no se indica que usuario voy a coger.
+            if(users!=null && users.length>0){
+                new AsyncTask<String,Void,String[]>(){
 
-                @Override
-                protected String[] doInBackground(String... params) {
-                    BaseDatosWrapper.insertRequest(getApplicationContext(),new Request(params[0],params[1]));
-                    ArrayList<Request> requests = BaseDatosWrapper.getRequests(getApplicationContext());
-                    String[] domains = new String[requests.size()];
-                    int i = 0;
-                    for(Request r: requests){
-                        domains[i] = r.getDom();
-                        i++;
+                    @Override
+                    protected String[] doInBackground(String... params) {
+                        BaseDatosWrapper.insertRequest(getApplicationContext(),new Request(params[0],params[1]));
+                        ArrayList<Request> requests = BaseDatosWrapper.getRequests(getApplicationContext());
+                        String[] domains = new String[requests.size()];
+                        int i = 0;
+                        for(Request r: requests){
+                            domains[i] = r.getDom();
+                            i++;
+                        }
+                        return domains;
                     }
-                    return domains;
-                }
-                @Override
-                protected void onPostExecute(String[] doms)
-                {
-                    if(doms.length>1){
-                        sendRequestNotification(doms);
-                    }else{
-                        Log.v(Globals.TAG,"El reqId que le voy a pasar a la notif es: "+reqId);
-                        sendRequestActionNotification(doms[0],reqId);
+                    @Override
+                    protected void onPostExecute(String[] doms)
+                    {
+                        if(doms.length>1){
+                            sendRequestNotification(doms);
+                        }else{
+                            Log.v(Globals.TAG,"El reqId que le voy a pasar a la notif es: "+reqId);
+                            sendRequestActionNotification(doms[0],reqId);
+                        }
+                        Intent intent = new Intent(Globals.REFRESH_CONTENT);
+                        sendBroadcast(intent);
                     }
-                    Intent intent = new Intent(Globals.REFRESH_CONTENT);
-                    sendBroadcast(intent);
+                }.execute(reqId,domain);
+            }else{
+                //No tengo ningun usuario del dominio de la peticion.
+                SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
+                String regId = prefs.getString(Globals.REG_ID,"");
+                String mail = prefs.getString(Globals.MAIL,"");
+                try {
+                    ServerMessage.sendResponseMessage(getApplicationContext(),mail,"",domain,Globals.NO_PASSWD,regId,reqId);
+                    Log.v(Globals.TAG,"No tengo el usuario que me piden");
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            }.execute(reqId,domain);
+
+            }
         }
     }
 
@@ -169,14 +201,19 @@ public class GcmIntentService extends IntentService {
                         Log.e(Globals.TAG,"[" + key + "=" + bundle.get(key)+"]");
                     }
                     String action = bundle.getString(Globals.MSG_ACTION);
-                    if(action.equals(Globals.ACTION_REGISTERED)){
-                        Log.e(Globals.TAG,"Registro completo.");
-                        String email = bundle.getString(Globals.MSG_MAIL,"");
-                        setRegistered(email);
-                    }else if(action.equals(Globals.ACTION_REQUEST)){
-                        handleRequest(bundle);
-                    }else if(action.equals(Globals.ACTION_CLEARNOTIF)){
-                        handleClearNotification(bundle);
+                    String serverKey = bundle.getString(Globals.MSG_SERVER_KEY);
+                    if(correctServerKey(serverKey)) {
+                        if (action.equals(Globals.ACTION_REGISTERED)) {
+                            Log.e(Globals.TAG, "Registro completo.");
+                            String email = bundle.getString(Globals.MSG_MAIL, "");
+                            setRegistered(email);
+                        } else if (action.equals(Globals.ACTION_REQUEST)) {
+                            handleRequest(bundle);
+                        } else if (action.equals(Globals.ACTION_CLEARNOTIF)) {
+                            handleClearNotification(bundle);
+                        }
+                    }else{
+                        Log.e(Globals.TAG,"La serverKey no es correcta");
                     }
                 }
             }

@@ -34,10 +34,22 @@ public class ToolbarActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        Bundle extras = getIntent().getExtras();
         activity = this;
         setContentView(R.layout.activity_toolbar);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbarTitle = Globals.TITLE_CONTENEDOR;
+        String ventana = null;
+        if(extras!=null){
+            ventana= extras.getString(Globals.INTENT_CONTENT);
+            Log.e(Globals.TAG,"extras no es null");
+        }
+        if(ventana==null) {
+            Log.e(Globals.TAG,"Ventana es null");
+            toolbarTitle = getResources().getString(R.string.container_title);
+        }else{
+            toolbarTitle = ventana;
+        }
+        Log.v(Globals.TAG,"Ventana sale siendo: "+toolbarTitle);
         toolbar.setTitle(toolbarTitle);
         toolbar.setBackgroundColor(getResources().getColor(R.color.orange));
         toolbar.setTitleTextColor(getResources().getColor(R.color.white));
@@ -51,6 +63,7 @@ public class ToolbarActivity extends ActionBarActivity {
             }
             public void onDrawerClosed(View drawerView){
                 toolbar.setTitle(toolbarTitle);
+                setContent(toolbarTitle);
                 invalidateOptionsMenu();
             }
         };
@@ -63,8 +76,12 @@ public class ToolbarActivity extends ActionBarActivity {
         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         ft.addToBackStack(null);
         ft.commit();
-        setContent(Globals.TITLE_CONTENEDOR);
-        DrawerFragment.performDrawerClick(0);
+        if(toolbarTitle.equals(getResources().getString(R.string.container_title))) {
+            DrawerFragment.performDrawerClick(0,R.string.container_title);
+        }else if(toolbarTitle.equals(getResources().getString(R.string.requests_title))){
+            DrawerFragment.performDrawerClick(1,R.string.requests_title);
+        }
+        setContent(toolbarTitle);
         Log.v(Globals.TAG,"Ha llegado al final de onCreate");
     }
 
@@ -117,18 +134,29 @@ public class ToolbarActivity extends ActionBarActivity {
     public static void setContent(String fragmentName){
         if(activity!=null){
             Fragment content = null;
-            if(Globals.TITLE_CONTENEDOR.equals(fragmentName)) {
+            if(activity.getResources().getString(R.string.container_title).equals(fragmentName)) {
                 content = new ContainerFragment();
-            }else if(Globals.TITLE_PETICIONES.equals(fragmentName)){
+                ContainerFragment.update();
+            }else if(activity.getResources().getString(R.string.requests_title).equals(fragmentName)){
                 content = new RequestsFragment();
+                RequestsFragment.update();
+            }else if("".equals(fragmentName)){
+                content = new BlankFragment();
             }
             if(content!=null){
                 FragmentTransaction ft = activity.getFragmentManager().beginTransaction();
                 ft.replace(R.id.content_fragment, content);
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-                ft.addToBackStack(null);
                 ft.commit();
             }
+            toolbarTitle = fragmentName;
         }
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        ContainerFragment.update();
+        RequestsFragment.update();
     }
 }

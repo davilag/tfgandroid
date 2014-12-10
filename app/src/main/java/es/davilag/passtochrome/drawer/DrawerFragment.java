@@ -42,19 +42,17 @@ public class DrawerFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String titulo;
+                ToolbarActivity.setContent("");
                 if(view==null){
-                    titulo = Globals.TITLE_CONTENEDOR;
+                    titulo = getResources().getString((int)id);
+                    ToolbarActivity.closeAndSetTitle(titulo);
                 }else{
                     TextView tv = (TextView)view.findViewById(R.id.drawer_itemName);
                     titulo = tv.getText().toString();
-                    if(Globals.TITLE_CONTENEDOR.equals(titulo)){
-                        ToolbarActivity.setContent(titulo);
-                    }else if(Globals.TITLE_PETICIONES.equals(titulo)){
-                        ToolbarActivity.setContent(titulo);
-                    }
+                    ToolbarActivity.closeAndSetTitle(titulo);
                 }
-                ToolbarActivity.closeAndSetTitle(titulo);
                 for(int i = 0; i<lv.getChildCount();i++){
+                    Log.e(Globals.TAG,"Se mete en el for");
                     if(i!=position){
                         lv.getChildAt(i).setActivated(false);
                     }
@@ -62,8 +60,8 @@ public class DrawerFragment extends Fragment {
             }
         });
         ArrayList<DrawerItem> list = new ArrayList<DrawerItem>();
-        list.add(new DrawerItem(Globals.TITLE_CONTENEDOR,R.drawable.ic_sd_card_grey600_24dp));
-        list.add(new DrawerItem(Globals.TITLE_PETICIONES,R.drawable.ic_inbox_grey600_24dp));
+        list.add(new DrawerItem(getResources().getString(R.string.container_title),R.drawable.ic_sd_card_grey600_24dp));
+        list.add(new DrawerItem(getResources().getString(R.string.requests_title),R.drawable.ic_inbox_grey600_24dp));
         list.add(new DrawerItem("Ajustes",R.drawable.ic_settings_black_24dp));
         ListDrawerAdapter adapter = new ListDrawerAdapter(c,R.layout.drawer_row,list);
         lv.setAdapter(adapter);
@@ -72,10 +70,10 @@ public class DrawerFragment extends Fragment {
         return rootView;
     }
 
-    public static void performDrawerClick(int index){
+    public static void performDrawerClick(int index, int title){
 
         Log.v(Globals.TAG,"Lv en perform es:"+lv);
-
+        Log.e(Globals.TAG,"LV tiene :"+lv.getChildCount()+" hijos");
 
         /*
         for(int i = 0; i<lv.getChildCount();i++){
@@ -85,6 +83,6 @@ public class DrawerFragment extends Fragment {
         TextView tv = (TextView) filaSeleccionada.findViewById(R.id.drawer_itemName);
         ToolbarActivity.closeAndSetTitle(tv.getText());
         */
-        lv.performItemClick(null,index,0);
+        lv.performItemClick(null,index,title);
     }
 }

@@ -16,5 +16,8 @@ public final class PTCDbContract {
 
     public static abstract class ContainerTable implements BaseColumns{
         public static final String TABLE_NAME = "TB_CONTAINER";
+        public static final String COLUMN_NAME_DOM = "DOM_NAME";
+        public static final String COLUMN_NAME_USER = "USER";
+        public static final String COLUMN_NAME_PASS= "PASSWORD";
     }
 }

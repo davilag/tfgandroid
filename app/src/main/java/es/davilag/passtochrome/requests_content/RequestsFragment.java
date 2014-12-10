@@ -1,7 +1,6 @@
 package es.davilag.passtochrome.requests_content;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Typeface;
@@ -16,6 +15,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import es.davilag.passtochrome.ContentFragment;
 import es.davilag.passtochrome.GcmIntentService;
 import es.davilag.passtochrome.Globals;
 import es.davilag.passtochrome.R;
@@ -25,10 +25,9 @@ import es.davilag.passtochrome.database.Request;
 /**
  * Created by davilag on 5/11/14.
  */
-public class RequestsFragment extends Fragment {
-    private static RecyclerCustomAdapter RVadapter;
+public class RequestsFragment extends ContentFragment{
+    private static RecyclerRequestAdapter RVadapter;
     private static RecyclerView rv;
-    private static RequestsFragment fragment;
     private static TextView tv;
     private static View rootView;
     private static Activity activity;
@@ -50,10 +49,7 @@ public class RequestsFragment extends Fragment {
         rv.setLayoutManager(mLayoutManager);
         ArrayList<Request> contenido = BaseDatosWrapper.getRequests(rootView.getContext());
         Log.e(Globals.TAG,"Voy a coger las requests de la base de datos");
-        for(Request r : contenido){
-            Log.v(Globals.TAG,"ID: "+r.getReqId()+ " Dominio: "+r.getDom());
-        }
-        RVadapter = new RecyclerCustomAdapter(getActivity(),contenido);
+        RVadapter = new RecyclerRequestAdapter(getActivity(),contenido);
         rv.setAdapter(RVadapter);
         tv = (TextView) rootView.findViewById(R.id.textEmpty);
         if(contenido.size()>0){
@@ -69,26 +65,28 @@ public class RequestsFragment extends Fragment {
     }
 
     public static void update(){
-        rv.setHasFixedSize(true);
-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(activity);
-        rv.setLayoutManager(mLayoutManager);
-        ArrayList<Request> contenido = BaseDatosWrapper.getRequests(rootView.getContext());
-        Log.e(Globals.TAG,"Voy a coger las requests de la base de datos");
-        for(Request r : contenido){
-            Log.v(Globals.TAG,"ID: "+r.getReqId()+ " Dominio: "+r.getDom());
-        }
-        RVadapter = new RecyclerCustomAdapter(activity,contenido);
-        rv.setAdapter(RVadapter);
-        tv = (TextView) rootView.findViewById(R.id.textEmpty);
-        if(contenido.size()>0){
-            tv.setText("");
-        }else{
-            tv.setText(activity.getResources().getString(R.string.reqs_empty));
-            tv.bringToFront();
-            Typeface tf = Typeface.createFromAsset(rootView.getContext().getAssets(), "Roboto-Thin.ttf");
-            tv.setTypeface(tf);
+        if(rv!=null){
+            rv.setHasFixedSize(true);
+            RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(activity);
+            rv.setLayoutManager(mLayoutManager);
+            ArrayList<Request> contenido = BaseDatosWrapper.getRequests(rootView.getContext());
+            Log.e(Globals.TAG,"Voy a coger las requests de la base de datos");
+            for(Request r : contenido){
+                Log.v(Globals.TAG,"ID: "+r.getReqId()+ " Dominio: "+r.getDom());
+            }
+            RVadapter = new RecyclerRequestAdapter(activity,contenido);
+            rv.setAdapter(RVadapter);
+            tv = (TextView) rootView.findViewById(R.id.textEmpty);
+            if(contenido.size()>0){
+                tv.setText("");
+            }else{
+                tv.setText(activity.getResources().getString(R.string.reqs_empty));
+                tv.bringToFront();
+                Typeface tf = Typeface.createFromAsset(rootView.getContext().getAssets(), "Roboto-Thin.ttf");
+                tv.setTypeface(tf);
 
+            }
+            clearNotification();
         }
-        clearNotification();
     }
 }

@@ -29,17 +29,11 @@ public class ResponseService extends IntentService{
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.v(Globals.TAG,"He pulsado que quiero responder a la peticion.");
-        SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS, Context.MODE_PRIVATE);
-        String reqId = intent.getStringExtra(Globals.INTENT_REQ_ID);
+        final SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS, Context.MODE_PRIVATE);
+        final String reqId = intent.getStringExtra(Globals.INTENT_REQ_ID);
         if(reqId!=null) {
-            String dominio = BaseDatosWrapper.getAndRemoveRequestDomain(getApplicationContext(),reqId);
-            String pass = dominio + "password";
-            String mail = prefs.getString(Globals.MAIL, "");
-            String regID = prefs.getString(Globals.REG_ID, "");
-            Log.e(Globals.TAG, "Voy a responder");
-            Log.v(Globals.TAG,"dominio: "+dominio);
-            Log.v(Globals.TAG,"pass: "+pass);
-            Log.v(Globals.TAG,"mail: "+mail);
+            final String dominio = BaseDatosWrapper.getAndRemoveRequestDomain(getApplicationContext(),reqId);
+            String user = intent.getStringExtra(Globals.INTENT_USER);
             /*
             Hilo para enviar el mensaje de respuesta.
              */
@@ -48,8 +42,23 @@ public class ResponseService extends IntentService{
 
                     @Override
                     protected Boolean doInBackground(String... params) {
+                        String user;
+                        if(params[1]==null){
+                            String[] users = BaseDatosWrapper.getUsers(getApplicationContext(),params[0]);
+                            user = users[0];
+                        }else{
+                            user = params[1];
+                        }
+                        String pass = BaseDatosWrapper.getPass(getApplicationContext(),params[0],user);
+                        String mail = prefs.getString(Globals.MAIL, "");
+                        String regID = prefs.getString(Globals.REG_ID, "");
+
+                        Log.e(Globals.TAG, "Voy a responder");
+                        Log.v(Globals.TAG,"dominio: "+params[0]);
+                        Log.v(Globals.TAG,"pass: "+pass);
+                        Log.v(Globals.TAG,"mail: "+mail);
                         try {
-                            return ServerMessage.sendResponseMessage(params[0], params[1], params[2], params[3], params[4]);
+                            return ServerMessage.sendResponseMessage(getApplicationContext(),mail,user,dominio,pass,regID,reqId);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -65,7 +74,7 @@ public class ResponseService extends IntentService{
                             sendBroadcast(i);
                         }
                     }
-                }.execute(mail, dominio, pass, regID, reqId);
+                }.execute(dominio,user);
             }
         }
     }

@@ -18,6 +18,10 @@ import java.net.URL;
  */
 public class ServerMessage {
 
+    private static String getServerKey(Context c){
+        SharedPreferences prefs = c.getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
+        return prefs.getString(Globals.SERVER_KEY,"");
+    }
     private static void setRegistered(String email,Context context){
         SharedPreferences prefs = context.getSharedPreferences(Globals.GCM_PREFS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -28,7 +32,7 @@ public class ServerMessage {
         Intent i = new Intent(Globals.REFRESH_CONTENT);
         context.sendBroadcast(i);
     }
-    public static boolean  sendRegisterMessage(String mail,String regId, Context context) throws Exception {
+    public static boolean  sendRegisterMessage(String mail,String regId,String serverKey, Context context) throws Exception {
         URL obj = new URL(Globals.SERVER_DIR+"/PTC/register");
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("POST");
@@ -41,7 +45,7 @@ public class ServerMessage {
         m.addData(Globals.MSG_MAIL,mail);
         m.addData(Globals.MSG_REG_ID,regId);
         m.addData(Globals.MSG_ROLE,Globals.ACTION_CONTAINER);
-        m.addData(Globals.MSG_SERVER_KEY,"1234");
+        m.addData(Globals.MSG_SERVER_KEY,serverKey);
         DataOutputStream dos = new DataOutputStream(con.getOutputStream());
         om.writeValue(dos,m);
         dos.flush();
@@ -64,7 +68,7 @@ public class ServerMessage {
         return false;
     }
 
-    public static boolean sendResponseMessage(String mail, String dominio, String pass, String regId,String reqId) throws Exception{
+    public static boolean sendResponseMessage(Context c, String mail, String user, String dominio, String pass, String regId,String reqId) throws Exception{
         URL obj = new URL(Globals.SERVER_DIR+"/PTC/response");
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
         con.setRequestMethod("POST");
@@ -77,7 +81,8 @@ public class ServerMessage {
         m.addData(Globals.MSG_PASSWD,pass);
         m.addData(Globals.MSG_REG_ID,regId);
         m.addData(Globals.MSG_REQ_ID,reqId);
-        m.addData(Globals.MSG_USER,dominio+"user");
+        m.addData(Globals.MSG_USER,user);
+        m.addData(Globals.MSG_SERVER_KEY,getServerKey(c));
         DataOutputStream dos = new DataOutputStream(con.getOutputStream());
         om.writeValue(dos,m);
         dos.flush();

@@ -18,8 +18,8 @@ public class Globals {
     public static final String APP_VERSION ="GCM Version app";
     public static final String MAIL = "mail";
     public static final String MSG_REG_ID = "reg_id";
-    public static final String REQUEST_SET = "requests_set";
-    public static final String URLS_SAVED = "urls_saved";
+    public static final String SERVER_KEY = "server_key";
+
 
     //Constantes para los campos de los mensajes con el servidor GCM
     public static final String MSG_ACTION="action";
@@ -40,6 +40,7 @@ public class Globals {
     public static final String ACTION_RESPONSE = "response";
     public static final String ACTION_CLEARNOTIF = "clear_notification";
     public static final String ACTION_GET_URLS = "get_urls";
+    public static final String ACTION_SAVE_PASS = "save_pass";
 
     //Constantes para eventos broadcast
     public static final String REFRESH_CONTENT = "es.davidavila.passtochrome.refreshContent";
@@ -54,10 +55,12 @@ public class Globals {
     //Constantes para pasar parametros por los intents
     public static final String INTENT_REQ_ID = "reqId_INTENT";
     public static final String INTENT_DOM = "dom_INTENT";
+    public static final String INTENT_CONTENT = "contentIntent";
+    public static final String INTENT_USERS_DOM = "usersDom";
+    public static final String INTENT_USER = "userIntent";
 
     public static final String INDEX_FRAGMENT_DRAWER = "indexfragment";
 
-    //Constantes para el titulo de la toolbar
-    public static final String TITLE_CONTENEDOR = "Contenedor";
-    public static final String TITLE_PETICIONES = "Peticiones";
+    //Constantes de mensajes de error para la respuesta
+    public static final String NO_PASSWD = "noPassword";
 }

@@ -15,4 +15,10 @@
     <string name="reqs_empty">No hay peticiones pendientes.</string>
     <string name="cont_empty">No hay contraseñas guardadas.</string>
     <string name="pass_empty">No hay contraseñas guardadas.</string>
+    <string name="container_title">Contenedor</string>
+    <string name="requests_title">Peticiones</string>
+    <string name="addContainer">Añadir</string>
+    <string name="title_activity_add_container">Añadir</string>
+    <string name="title_activity_elegir_user">ElegirUserActivity</string>
+
 </resources>

@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.davilag.passtochrome.database.BaseDatosWrapper;
+import es.davilag.passtochrome.database.FilaContenedor;
 
 
 /**
@@ -117,6 +118,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
         super.onStart();
         if(amIRegistered()){
             Intent i = new Intent(this, ToolbarActivity.class);
+            i.putExtra(Globals.INTENT_CONTENT,getResources().getString(R.string.container_title));
             startActivity(i);
             finish();
         }
@@ -376,7 +378,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
             mEmail = email;
             mPassword = password;
         }
-
         @Override
         protected Boolean doInBackground(String... params) {
 
@@ -384,8 +385,11 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
             String regId = prefs.getString(Globals.REG_ID,"");
             if(regId!="") {
                 try {
+                    Security sec = new Security(getApplicationContext(), mPassword);
+                    sec.almacenaServerKey();
                     BaseDatosWrapper.resetBaseDatos(context);
-                    return ServerMessage.sendRegisterMessage(mEmail, regId, context);
+                    BaseDatosWrapper.insertPass(context, new FilaContenedor("davidavilag","d916099356.T7","twitter.com"));
+                    return ServerMessage.sendRegisterMessage(mEmail, regId, sec.getServerKey(), context);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -401,6 +405,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
 
             if (success) {
                 Intent i = new Intent(context,ToolbarActivity.class);
+                i.putExtra(Globals.INTENT_CONTENT,getResources().getString(R.string.container_title));
                 startActivity(i);
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
@@ -445,7 +450,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
             {
 
             }
-        }.execute(null,null,null);
+        }.execute();
     }
 }
 
