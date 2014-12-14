@@ -1,6 +1,5 @@
 package es.davilag.passtochrome.container_content;
 
-import android.content.Context;
 import android.graphics.Typeface;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -19,11 +18,9 @@ import es.davilag.passtochrome.database.FilaContenedor;
  */
 public class RecyclerContainerAdapter extends RecyclerView.Adapter<RecyclerContainerAdapter.ViewHolderContainer> implements View.OnClickListener {
 
-    private Context c;
     private ArrayList<FilaContenedor> dataset;
 
-    public RecyclerContainerAdapter (Context c, ArrayList<FilaContenedor> dataset){
-        this.c = c;
+    public RecyclerContainerAdapter (ArrayList<FilaContenedor> dataset){
         this.dataset = dataset;
     }
 

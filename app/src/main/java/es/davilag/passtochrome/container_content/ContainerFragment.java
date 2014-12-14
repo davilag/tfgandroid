@@ -49,11 +49,8 @@ public class ContainerFragment extends ContentFragment {
 
             @Override
             protected ArrayList<FilaContenedor> doInBackground(Void... params) {
-                if(contenido ==null){
-                    contenido = BaseDatosWrapper.getContenedor(rootView.getContext());
-                    Log.e(Globals.TAG,"Contenido es null");
-                }
-                RVadapter = new RecyclerContainerAdapter(getActivity(),contenido);
+                contenido = BaseDatosWrapper.getContenedor(rootView.getContext());
+                RVadapter = new RecyclerContainerAdapter(contenido);
                 rv.setAdapter(RVadapter);
                 tv = (TextView) rootView.findViewById(R.id.textEmpty);
                 return  contenido;
@@ -98,7 +95,7 @@ public class ContainerFragment extends ContentFragment {
             rv.setLayoutManager(mLayoutManager);
             ArrayList<FilaContenedor> contenido = BaseDatosWrapper.getContenedor(rootView.getContext());
             Log.e(Globals.TAG,"Voy a coger las requests de la base de datos");
-            RVadapter = new RecyclerContainerAdapter(activity,contenido);
+            RVadapter = new RecyclerContainerAdapter(contenido);
             rv.setAdapter(RVadapter);
             tv = (TextView) rootView.findViewById(R.id.textEmpty);
             if(contenido.size()>0){
