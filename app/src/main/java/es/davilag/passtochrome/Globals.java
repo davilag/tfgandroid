@@ -41,6 +41,8 @@ public class Globals {
     public static final String ACTION_CLEARNOTIF = "clear_notification";
     public static final String ACTION_GET_URLS = "get_urls";
     public static final String ACTION_SAVE_PASS = "save_pass";
+    public static final String ACTION_ADD_PASS = "addpass";
+    public static final String MSG_SAVED_PASS = "saved";
 
     //Constantes para eventos broadcast
     public static final String REFRESH_CONTENT = "es.davidavila.passtochrome.refreshContent";
@@ -49,7 +51,7 @@ public class Globals {
     public static final String ACTION_BROAD = "es.davidavila.actionBroadcastRefresh";
 
     //Direccion del servidor, puede cambiar con la entrada de un mensaje.
-    private static final String SERVER_IP = "193.147.49.34";
+    private static final String SERVER_IP = "192.168.43.135";
     public static final String SERVER_DIR = "http://"+SERVER_IP+":8080";
 
     //Constantes para pasar parametros por los intents

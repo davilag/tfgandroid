@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    android:orientation="vertical"
+<android.support.v4.widget.DrawerLayout
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="left"
-        android:minHeight="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        >
-    </android.support.v7.widget.Toolbar>
-    <android.support.v4.widget.DrawerLayout
-        android:id="@+id/drawer_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:fitsSystemWindows="true">
+    <LinearLayout
+        android:id="@+id/layout_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools">
-
-
+        android:orientation="vertical">
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            >
+        </android.support.v7.widget.Toolbar>
         <!-- The main content view -->
         <FrameLayout
             android:id="@+id/content_fragment"
@@ -29,21 +25,30 @@
             android:layout_width="match_parent">
 
         </FrameLayout>
-
-
-
-        <!-- The navigation drawer -->
-        <RelativeLayout
-            android:layout_height="match_parent"
-            android:layout_width="match_parent"
-            android:layout_gravity="left|start"
-            android:id="@+id/navigation_drawer">
-
-            <FrameLayout android:id="@+id/navigation_drawer_fragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="start"
-                tools:layout="@layout/fragment_navigation_drawer"/>
-        </RelativeLayout>
-    </android.support.v4.widget.DrawerLayout>
     </LinearLayout>
+
+
+
+
+    <!-- The navigation drawer -->
+    <es.davilag.passtochrome.ScrimInsetsFrameLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/white"
+        android:fitsSystemWindows="true"
+        app:insetForeground="#4000"
+        android:id="@+id/navigation_drawer"
+        >
+
+        <!-- Your drawer content -->
+        <fragment android:id="@+id/navigation_drawer_fragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:name="es.davilag.passtochrome.drawer.DrawerFragment"
+            tools:layout="@layout/fragment_navigation_drawer"/>
+    </es.davilag.passtochrome.ScrimInsetsFrameLayout>
+
+
+</android.support.v4.widget.DrawerLayout>

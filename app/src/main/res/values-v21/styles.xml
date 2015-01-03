@@ -2,32 +2,35 @@
 <resources>
     <style name="AppTheme" parent="android:Theme.Material.Light.DarkActionBar">
         <item name="android:colorPrimary">#ef6c00</item>
-        <item name="android:colorPrimaryDark">#e65100</item>
         <item name="android:colorAccent">#ef6c00</item>
+        <item name="android:colorPrimaryDark">@color/darkOrange</item>
         <item name="android:colorControlActivated">#ef6c00</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
 
     </style>
     <style name="Toolbar" parent="Base.V21.Theme.AppCompat.Light">
         <item name="windowActionBar">false</item>
-        <item name="android:colorPrimaryDark">#e65100</item>
         <item name="color">@android:color/white</item>
         <item name="android:layout_height">?android:actionBarSize</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="android:colorPrimary">#ef6c00</item>
         <item name="android:colorAccent">#ef6c00</item>
         <item name="android:colorControlActivated">#ef6c00</item>
+        <item name="android:colorPrimaryDark">@color/darkOrange</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
     <style name="normalActivity" parent="Base.ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="windowActionBar">false</item>
-        <item name="android:colorPrimaryDark">#e65100</item>
         <item name="color">@android:color/white</item>
         <item name="android:layout_height">?android:actionBarSize</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="android:colorPrimary">#ef6c00</item>
         <item name="android:colorAccent">#ef6c00</item>
         <item name="android:colorControlActivated">#ef6c00</item>
+        <item name="android:colorPrimaryDark">@color/darkOrange</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
     <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">

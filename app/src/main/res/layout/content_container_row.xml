@@ -35,16 +35,6 @@
         <ImageButton
             android:layout_width="48dp"
             android:layout_height="match_parent"
-            android:src="@drawable/ic_reply_black_24dp"
-            android:id="@+id/list_request_response"
-            android:background="@drawable/ripple"
-            android:layout_toStartOf="@+id/list_request_cancel"
-            android:layout_marginRight="18dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentTop="true" />
-        <ImageButton
-            android:layout_width="48dp"
-            android:layout_height="match_parent"
             android:src="@drawable/ic_clear_black_24dp"
             android:id="@+id/list_request_cancel"
             android:background="@drawable/ripple"

@@ -37,6 +37,7 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -111,6 +112,20 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
                 registerInBackground();
             }
         }
+        new Thread(){
+            @Override
+            public void run() {
+                InputStream is = context.getResources().openRawResource(getResources().getIdentifier("prueba","raw",getPackageName()));
+                try {
+                    byte [] buff = new byte[1024];
+                    int x = is.read(buff);
+                    Log.e(Globals.TAG,"He leido "+x+"bytes");
+                    Log.e(Globals.TAG,buff.toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     @Override

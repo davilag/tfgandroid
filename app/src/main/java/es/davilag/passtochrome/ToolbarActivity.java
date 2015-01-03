@@ -56,6 +56,7 @@ public class ToolbarActivity extends ActionBarActivity {
         setSupportActionBar(toolbar);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerLayout.setStatusBarBackgroundColor(getResources().getColor(R.color.darkOrange));
         toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open, R.string.close){
             public void onDrawerOpened(View drawerView){
                 toolbar.setTitle(getResources().getString(R.string.app_name));

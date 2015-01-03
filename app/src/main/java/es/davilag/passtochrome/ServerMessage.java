@@ -108,4 +108,44 @@ public class ServerMessage {
         Log.e(Globals.TAG,"Mensaje de respuesta fallido");
         return false;
     }
+
+    public static boolean sendSavedPassResponse(Context c, String reqId, String saved, String mail) throws Exception{
+
+        URL obj = new URL(Globals.SERVER_DIR+"/PTC/savedres");
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-Type", "application/json");
+        ObjectMapper om = new ObjectMapper();
+        Message m = new Message();
+        m.addData(Globals.MSG_ACTION,Globals.ACTION_REQUEST);
+        m.addData(Globals.MSG_MAIL,mail);
+        m.addData(Globals.MSG_REQ_ID,reqId);
+        m.addData(Globals.MSG_SERVER_KEY,getServerKey(c));
+        m.addData(Globals.MSG_SAVED_PASS,saved);
+        DataOutputStream dos = new DataOutputStream(con.getOutputStream());
+        om.writeValue(dos,m);
+        dos.flush();
+        dos.close();
+        int responseCode = con.getResponseCode();
+        Log.v(Globals.TAG,"El codigo de respuesta de el mensaje de registro es: "+responseCode);
+        if(responseCode == 200){
+            /*
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            Boolean registrado = Boolean.parseBoolean(response.toString());
+            setRegistered(mail,context);
+            */
+            Log.v(Globals.TAG,"Mensaje de respuesta enviado con éxtio.");
+            return true;
+        }
+        Log.e(Globals.TAG,"Mensaje de respuesta fallido");
+        return false;
+
+    }
 }

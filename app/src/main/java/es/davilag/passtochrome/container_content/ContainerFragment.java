@@ -3,7 +3,6 @@ package es.davilag.passtochrome.container_content;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Typeface;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -45,29 +44,18 @@ public class ContainerFragment extends ContentFragment {
         rv.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         rv.setLayoutManager(mLayoutManager);
-        new AsyncTask<Void,Void,ArrayList<FilaContenedor>>(){
-
-            @Override
-            protected ArrayList<FilaContenedor> doInBackground(Void... params) {
-                contenido = BaseDatosWrapper.getContenedor(rootView.getContext());
-                RVadapter = new RecyclerContainerAdapter(contenido);
-                rv.setAdapter(RVadapter);
-                tv = (TextView) rootView.findViewById(R.id.textEmpty);
-                return  contenido;
-            }
-            @Override
-            protected void onPostExecute(ArrayList<FilaContenedor> contenido)
-            {
-                if(contenido.size()>0){
-                    tv.setText("");
-                }else{
-                    tv.setText(getResources().getString(R.string.cont_empty));
-                    tv.bringToFront();
-                    Typeface tf = Typeface.createFromAsset(rootView.getContext().getAssets(), "Roboto-Thin.ttf");
-                    tv.setTypeface(tf);
-                }
-            }
-        }.execute();
+        contenido = BaseDatosWrapper.getContenedor(rootView.getContext());
+        RVadapter = new RecyclerContainerAdapter(contenido);
+        rv.setAdapter(RVadapter);
+        tv = (TextView) rootView.findViewById(R.id.textEmpty);
+        if(contenido.size()>0){
+            tv.setText("");
+        }else{
+            tv.setText(getResources().getString(R.string.cont_empty));
+            tv.bringToFront();
+            Typeface tf = Typeface.createFromAsset(rootView.getContext().getAssets(), "Roboto-Thin.ttf");
+            tv.setTypeface(tf);
+        }
         setHasOptionsMenu(true);
         return  rootView;
     }

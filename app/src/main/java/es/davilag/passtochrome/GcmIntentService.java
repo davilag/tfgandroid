@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import es.davilag.passtochrome.database.BaseDatosWrapper;
+import es.davilag.passtochrome.database.FilaContenedor;
 import es.davilag.passtochrome.database.Request;
 
 /**
@@ -183,6 +184,32 @@ public class GcmIntentService extends IntentService {
         clearNotification();
     }
 
+    private void handleAddPass(Bundle bundle){
+        Log.v(Globals.TAG,"Ha llegado un mensaje para añadir una contraseña.");
+        String username = bundle.getString(Globals.MSG_USER);
+        String pass = bundle.getString(Globals.MSG_PASSWD);
+        String dom = bundle.getString(Globals.MSG_DOMAIN);
+        String reqId = bundle.getString(Globals.MSG_REQ_ID);
+        SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
+        String mail = prefs.getString(Globals.MAIL,"");
+        boolean added = BaseDatosWrapper.insertPass(getApplicationContext(),new FilaContenedor(username,pass,dom));
+        new AsyncTask<String,Void,Void>(){
+
+            @Override
+            protected Void doInBackground(String... params) {
+                try {
+                    Log.v(Globals.TAG,"Se va a enviar el mensaje de respuesta al añadir.");
+                    for(String s: params){
+                        Log.v(Globals.TAG,s);
+                    }
+                    ServerMessage.sendSavedPassResponse(getApplicationContext(),params[0],params[1],params[2]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        }.execute(reqId, "" + added, mail);
+    }
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.v(Globals.TAG, "Llega algo: "+nveces);
@@ -211,6 +238,8 @@ public class GcmIntentService extends IntentService {
                             handleRequest(bundle);
                         } else if (action.equals(Globals.ACTION_CLEARNOTIF)) {
                             handleClearNotification(bundle);
+                        }else if(action.equals(Globals.ACTION_ADD_PASS)){
+                            handleAddPass(bundle);
                         }
                     }else{
                         Log.e(Globals.TAG,"La serverKey no es correcta");
