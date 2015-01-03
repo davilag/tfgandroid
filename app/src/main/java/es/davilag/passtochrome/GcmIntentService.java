@@ -21,6 +21,7 @@ import java.util.Set;
 import es.davilag.passtochrome.database.BaseDatosWrapper;
 import es.davilag.passtochrome.database.FilaContenedor;
 import es.davilag.passtochrome.database.Request;
+import es.davilag.passtochrome.http.ServerMessage;
 
 /**
  * Servicio que se ejecuta cuando llega un mensaje de GCM para analizarlo.
@@ -165,7 +166,7 @@ public class GcmIntentService extends IntentService {
                 String regId = prefs.getString(Globals.REG_ID,"");
                 String mail = prefs.getString(Globals.MAIL,"");
                 try {
-                    ServerMessage.sendResponseMessage(getApplicationContext(),mail,"",domain,Globals.NO_PASSWD,regId,reqId);
+                    ServerMessage.sendResponseMessage(getApplicationContext(), mail, "", domain, Globals.NO_PASSWD, regId, reqId);
                     Log.v(Globals.TAG,"No tengo el usuario que me piden");
                 } catch (Exception e) {
                     e.printStackTrace();

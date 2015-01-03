@@ -43,6 +43,7 @@ import java.util.List;
 
 import es.davilag.passtochrome.database.BaseDatosWrapper;
 import es.davilag.passtochrome.database.FilaContenedor;
+import es.davilag.passtochrome.http.ServerMessage;
 
 
 /**

@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import es.davilag.passtochrome.database.BaseDatosWrapper;
+import es.davilag.passtochrome.http.ServerMessage;
 
 /**
  * Created by davilag on 01/10/14.
@@ -58,7 +59,7 @@ public class ResponseService extends IntentService{
                         Log.v(Globals.TAG,"pass: "+pass);
                         Log.v(Globals.TAG,"mail: "+mail);
                         try {
-                            return ServerMessage.sendResponseMessage(getApplicationContext(),mail,user,dominio,pass,regID,reqId);
+                            return ServerMessage.sendResponseMessage(getApplicationContext(), mail, user, dominio, pass, regID, reqId);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

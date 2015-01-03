@@ -20,5 +20,8 @@
     <string name="addContainer">Añadir</string>
     <string name="title_activity_add_container">Añadir</string>
     <string name="title_activity_elegir_user">ElegirUserActivity</string>
+    <string name="server_cert_asset_name">master-cacert.pem</string>
+    <string name="client_cert_file_name">client-cert.p12</string>
+    <string name="client_cert_password">proyecto</string>
 
 </resources>

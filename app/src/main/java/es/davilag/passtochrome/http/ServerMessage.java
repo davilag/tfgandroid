@@ -1,26 +1,59 @@
-package es.davilag.passtochrome;
+package es.davilag.passtochrome.http;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+
+import es.davilag.passtochrome.Globals;
+import es.davilag.passtochrome.Message;
+import es.davilag.passtochrome.R;
 
 /**
  * Created by davilag on 22/10/14.
  */
 public class ServerMessage {
+    public static class NullHostNameVerifier implements HostnameVerifier {
 
+        public boolean verify(String hostname, SSLSession session) {
+            Log.i("RestUtilImpl", "Approving certificate for " + hostname);
+            return true;
+        }
+    }
     private static String getServerKey(Context c){
         SharedPreferences prefs = c.getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
         return prefs.getString(Globals.SERVER_KEY,"");
+    }
+
+    private static InputStream getClientCertFile(Context c) throws Exception{
+        AssetManager assetManager = c.getAssets();
+        return assetManager.open(c.getResources().getString(R.string.client_cert_file_name));
+    }
+    private static String readCaCert(Context c) throws Exception {
+        AssetManager assetManager = c.getAssets();
+        InputStream inputStream = assetManager.open(c.getResources().getString(R.string.server_cert_asset_name));
+        return IOUtil.readFully(inputStream);
+    }
+    private static SSLContext generateSSLContext(Context c) throws Exception{
+        InputStream clientCertFile = getClientCertFile(c);
+        String clientCertificatePasswd = c.getResources().getString(R.string.client_cert_password);
+        String caCertificate = readCaCert(c);
+        return SSLContextFactory.getInstance().makeContext(clientCertFile, clientCertificatePasswd, caCertificate);
     }
     private static void setRegistered(String email,Context context){
         SharedPreferences prefs = context.getSharedPreferences(Globals.GCM_PREFS, Context.MODE_PRIVATE);
@@ -33,8 +66,14 @@ public class ServerMessage {
         context.sendBroadcast(i);
     }
     public static boolean  sendRegisterMessage(String mail,String regId,String serverKey, Context context) throws Exception {
+        SSLContext sslContext = generateSSLContext(context);
         URL obj = new URL(Globals.SERVER_DIR+"/PTC/register");
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        HttpURLConnection con = null;
+        ((HttpsURLConnection)con).setDefaultHostnameVerifier(new NullHostNameVerifier());
+        con = (HttpURLConnection) obj.openConnection();
+        if(con instanceof HttpsURLConnection) {
+            ((HttpsURLConnection)con).setSSLSocketFactory(sslContext.getSocketFactory());
+        }
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type","application/json");
         con.setDoOutput(true);
@@ -69,8 +108,14 @@ public class ServerMessage {
     }
 
     public static boolean sendResponseMessage(Context c, String mail, String user, String dominio, String pass, String regId,String reqId) throws Exception{
+        SSLContext sslContext = generateSSLContext(c);
         URL obj = new URL(Globals.SERVER_DIR+"/PTC/response");
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        HttpURLConnection con = null;
+        ((HttpsURLConnection)con).setDefaultHostnameVerifier(new NullHostNameVerifier());
+        con = (HttpURLConnection) obj.openConnection();
+        if(con instanceof HttpsURLConnection) {
+            ((HttpsURLConnection)con).setSSLSocketFactory(sslContext.getSocketFactory());
+        }
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json");
         ObjectMapper om = new ObjectMapper();
@@ -110,9 +155,14 @@ public class ServerMessage {
     }
 
     public static boolean sendSavedPassResponse(Context c, String reqId, String saved, String mail) throws Exception{
-
+        SSLContext sslContext = generateSSLContext(c);
         URL obj = new URL(Globals.SERVER_DIR+"/PTC/savedres");
-        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+        HttpURLConnection con = null;
+        ((HttpsURLConnection)con).setDefaultHostnameVerifier(new NullHostNameVerifier());
+        con = (HttpURLConnection) obj.openConnection();
+        if(con instanceof HttpsURLConnection) {
+            ((HttpsURLConnection)con).setSSLSocketFactory(sslContext.getSocketFactory());
+        }
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json");
         ObjectMapper om = new ObjectMapper();
