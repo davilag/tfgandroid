@@ -37,6 +37,7 @@ public class RecyclerContainerAdapter extends RecyclerView.Adapter<RecyclerConta
     public void onBindViewHolder(ViewHolderContainer viewHolderContainer, int i) {
         viewHolderContainer.dom.setText(dataset.get(i).getDom());
         viewHolderContainer.user.setText(dataset.get(i).getUsuario());
+        viewHolderContainer.inicial.setText(dataset.get(i).getDom().toUpperCase().charAt(0)+"");
     }
 
     @Override
@@ -53,16 +54,19 @@ public class RecyclerContainerAdapter extends RecyclerView.Adapter<RecyclerConta
         public CardView row;
         public TextView dom;
         public TextView user;
+        public TextView inicial;
         public ViewHolderContainer(View itemView) {
             super(itemView);
             row = (CardView) itemView.findViewById(R.id.card_view);
             dom = (TextView) itemView.findViewById(R.id.list_container_dominio);
             user = (TextView) itemView.findViewById(R.id.list_container_user);
+            inicial = (TextView) itemView.findViewById(R.id.inicial_fila);
             Typeface tf = Typeface.createFromAsset(row.getContext().getAssets(), "Roboto-Bold.ttf");
             dom.setTypeface(tf);
             tf = Typeface.createFromAsset(row.getContext().getAssets(), "Roboto-ThinItalic.ttf");
             user.setTypeface(tf);
-
+            tf = Typeface.createFromAsset(row.getContext().getAssets(),"Roboto-Light.ttf");
+            inicial.setTypeface(tf);
         }
     }
 }
