@@ -226,5 +226,8 @@ public class PTCDbHelper extends SQLiteOpenHelper {
     *
     */
 
+    public void deleteDataBase(Context c){
+        c.deleteDatabase(DATABASE_NAME);
+    }
 
 }

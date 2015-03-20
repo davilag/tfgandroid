@@ -198,4 +198,36 @@ public class ServerMessage {
         return false;
 
     }
+
+    public static boolean sendLogoutMessage(Context c) throws Exception {
+        SSLContext sslContext = generateSSLContext(c);
+        URL obj = new URL(Globals.SERVER_DIR+"/PTC/register");
+        HttpURLConnection con = null;
+        ((HttpsURLConnection)con).setDefaultHostnameVerifier(new NullHostNameVerifier());
+        con = (HttpURLConnection) obj.openConnection();
+        if(con instanceof HttpsURLConnection) {
+            ((HttpsURLConnection)con).setSSLSocketFactory(sslContext.getSocketFactory());
+        }
+        SharedPreferences prefs = c.getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-Type","application/json");
+        con.setDoOutput(true);
+        con.setDoInput(true);
+        ObjectMapper om = new ObjectMapper();
+        Message m = new Message();
+        m.addData(Globals.MSG_ACTION,Globals.ACTION_LOGOUT);
+        m.addData(Globals.MSG_MAIL,prefs.getString(Globals.MAIL,""));
+        m.addData(Globals.MSG_REG_ID,prefs.getString(Globals.REG_ID,""));
+        m.addData(Globals.MSG_SERVER_KEY,getServerKey(c));
+        DataOutputStream dos = new DataOutputStream(con.getOutputStream());
+        om.writeValue(dos,m);
+        dos.flush();
+        dos.close();
+        int responseCode = con.getResponseCode();
+        Log.v(Globals.TAG,"El codigo de respuesta de el mensaje de registro es: "+responseCode);
+        if(responseCode == 200){
+            return true;
+        }
+        return false;
+    }
 }

@@ -43,6 +43,7 @@ public class Globals {
     public static final String ACTION_SAVE_PASS = "save_pass";
     public static final String ACTION_ADD_PASS = "addpass";
     public static final String MSG_SAVED_PASS = "saved";
+    public static final String ACTION_LOGOUT = "logout";
 
     //Constantes para eventos broadcast
     public static final String REFRESH_CONTENT = "es.davidavila.passtochrome.refreshContent";

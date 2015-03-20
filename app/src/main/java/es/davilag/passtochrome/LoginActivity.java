@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.davilag.passtochrome.database.BaseDatosWrapper;
-import es.davilag.passtochrome.database.FilaContenedor;
 import es.davilag.passtochrome.http.ServerMessage;
 
 
@@ -404,7 +403,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
                     Security sec = new Security(getApplicationContext(), mPassword);
                     sec.almacenaServerKey();
                     BaseDatosWrapper.resetBaseDatos(context);
-                    BaseDatosWrapper.insertPass(context, new FilaContenedor("davidavilag","d916099356.T7","twitter.com"));
                     return ServerMessage.sendRegisterMessage(mEmail, regId, sec.getServerKey(), context);
                 } catch (Exception e) {
                     e.printStackTrace();

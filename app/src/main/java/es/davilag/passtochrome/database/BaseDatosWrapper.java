@@ -113,4 +113,9 @@ public class BaseDatosWrapper {
         db.close();
         return users;
     }
+
+    public void deleteDataBase(Context c){
+        PTCDbHelper helper = new PTCDbHelper(c);
+        helper.deleteDataBase(c);
+    }
 }

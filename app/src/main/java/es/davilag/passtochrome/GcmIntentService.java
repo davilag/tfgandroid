@@ -14,14 +14,24 @@ import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import es.davilag.passtochrome.database.BaseDatosWrapper;
 import es.davilag.passtochrome.database.FilaContenedor;
 import es.davilag.passtochrome.database.Request;
 import es.davilag.passtochrome.http.ServerMessage;
+import es.davilag.passtochrome.security.GaloisCounterMode;
 
 /**
  * Servicio que se ejecuta cuando llega un mensaje de GCM para analizarlo.
@@ -127,7 +137,32 @@ public class GcmIntentService extends IntentService {
 
     private void handleRequest(Bundle bundle){
         Log.v(Globals.TAG,"Llega una peticion");
+        String key = "MTIzNDU2Nzg5MDk4NzY1NA==";
+        String iv = "NzYzNDI1MTA5ODQ2MzgyNQ==";
         String domain = bundle.getString(Globals.MSG_DOMAIN);
+        Log.v(Globals.TAG,"El dominio de entrada es: '"+domain+"'");
+        GaloisCounterMode gcm = new GaloisCounterMode();
+        try {
+            domain = gcm.GCMDecrypt(key,iv,domain,"MTIzNDU2Nzg5MDk4NzY1NA")[0];
+            Log.v(Globals.TAG,"El dominio de entrada es: '"+domain+"'");
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        Log.v(Globals.TAG,"El dominio de descifrado es: "+domain);
         final String reqId = bundle.getString(Globals.MSG_REQ_ID);
         Log.v(Globals.TAG,"El reqId es: "+reqId);
         if(domain!=null) {

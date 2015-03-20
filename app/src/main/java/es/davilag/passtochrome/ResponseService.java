@@ -10,6 +10,7 @@ import android.util.Log;
 
 import es.davilag.passtochrome.database.BaseDatosWrapper;
 import es.davilag.passtochrome.http.ServerMessage;
+import es.davilag.passtochrome.security.GaloisCounterMode;
 
 /**
  * Created by davilag on 01/10/14.
@@ -55,11 +56,17 @@ public class ResponseService extends IntentService{
                         String regID = prefs.getString(Globals.REG_ID, "");
 
                         Log.e(Globals.TAG, "Voy a responder");
-                        Log.v(Globals.TAG,"dominio: "+params[0]);
+                        Log.v(Globals.TAG,"dominio: '"+params[0]+"'");
                         Log.v(Globals.TAG,"pass: "+pass);
                         Log.v(Globals.TAG,"mail: "+mail);
+                        Log.v(Globals.TAG,"Llega una peticion");
+                        String key = "MTIzNDU2Nzg5MDk4NzY1NA==";
+                        String iv = "NzYzNDI1MTA5ODQ2MzgyNQ==";
+                        GaloisCounterMode gcm = new GaloisCounterMode();
                         try {
-                            return ServerMessage.sendResponseMessage(getApplicationContext(), mail, user, dominio, pass, regID, reqId);
+                            String dominioEnc = gcm.GCMEncrypt(key,iv,dominio,"MTIzNDU2Nzg5MDk4NzY1NA")[0];
+                            Log.v(Globals.TAG,"dominioEn: "+dominioEnc);
+                            return ServerMessage.sendResponseMessage(getApplicationContext(), mail, user, dominioEnc, pass, regID, reqId);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

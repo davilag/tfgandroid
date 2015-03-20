@@ -23,5 +23,5 @@
     <string name="server_cert_asset_name">master-cacert.pem</string>
     <string name="client_cert_file_name">client-cert.p12</string>
     <string name="client_cert_password">proyecto</string>
-
+    <string name="logout">Cerrar sesión</string>
 </resources>
