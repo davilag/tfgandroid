@@ -201,7 +201,7 @@ public class ServerMessage {
 
     public static boolean sendLogoutMessage(Context c) throws Exception {
         SSLContext sslContext = generateSSLContext(c);
-        URL obj = new URL(Globals.SERVER_DIR+"/PTC/register");
+        URL obj = new URL(Globals.SERVER_DIR+"/PTC/logout");
         HttpURLConnection con = null;
         ((HttpsURLConnection)con).setDefaultHostnameVerifier(new NullHostNameVerifier());
         con = (HttpURLConnection) obj.openConnection();
@@ -224,9 +224,17 @@ public class ServerMessage {
         dos.flush();
         dos.close();
         int responseCode = con.getResponseCode();
-        Log.v(Globals.TAG,"El codigo de respuesta de el mensaje de registro es: "+responseCode);
         if(responseCode == 200){
-            return true;
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            Boolean registrado = Boolean.parseBoolean(response.toString());
+            return registrado;
         }
         return false;
     }

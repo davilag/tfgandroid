@@ -1,5 +1,6 @@
 package es.davilag.passtochrome.container_content;
 
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -10,8 +11,10 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import es.davilag.passtochrome.Globals;
 import es.davilag.passtochrome.R;
 import es.davilag.passtochrome.database.FilaContenedor;
+import es.davilag.passtochrome.info_activity.InfoActivity;
 
 /**
  * Created by davilag on 5/12/14.
@@ -47,8 +50,15 @@ public class RecyclerContainerAdapter extends RecyclerView.Adapter<RecyclerConta
 
     @Override
     public void onClick(View v) {
+        TextView tv = (TextView)v.findViewById(R.id.list_container_dominio);
+        TextView tvUser = (TextView) v.findViewById(R.id.list_container_user);
 
+        Intent i = new Intent(v.getContext(), InfoActivity.class);
+        i.putExtra(Globals.INTENT_DOM,tv.getText());
+        i.putExtra(Globals.INTENT_USER, tvUser.getText());
+        v.getContext().startActivity(i);
     }
+
 
     public static class ViewHolderContainer extends RecyclerView.ViewHolder{
         public CardView row;

@@ -24,4 +24,6 @@
     <string name="client_cert_file_name">client-cert.p12</string>
     <string name="client_cert_password">proyecto</string>
     <string name="logout">Cerrar sesión</string>
+    <string name="title_activity_info">Información</string>
+
 </resources>

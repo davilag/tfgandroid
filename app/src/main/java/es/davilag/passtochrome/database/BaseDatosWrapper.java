@@ -118,4 +118,12 @@ public class BaseDatosWrapper {
         PTCDbHelper helper = new PTCDbHelper(c);
         helper.deleteDataBase(c);
     }
+
+    public static ArrayList<FilaContenedor> getDomains(Context c){
+        PTCDbHelper helper = new PTCDbHelper(c);
+        SQLiteDatabase db = helper.getReadableDatabase();
+        ArrayList<FilaContenedor> doms = helper.getDomains(db);
+        db.close();
+        return doms;
+    }
 }

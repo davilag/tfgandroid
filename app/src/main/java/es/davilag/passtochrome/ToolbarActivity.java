@@ -12,25 +12,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-
 import es.davilag.passtochrome.container_content.ContainerFragment;
 import es.davilag.passtochrome.drawer.DrawerFragment;
 import es.davilag.passtochrome.requests_content.RequestsFragment;
-import es.davilag.passtochrome.security.GaloisCounterMode;
 
 
 public class ToolbarActivity extends ActionBarActivity {
@@ -70,14 +58,9 @@ public class ToolbarActivity extends ActionBarActivity {
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setStatusBarBackgroundColor(getResources().getColor(R.color.darkOrange));
         toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open, R.string.close){
-            public void onDrawerOpened(View drawerView){
-                toolbar.setTitle(getResources().getString(R.string.app_name));
-                invalidateOptionsMenu();
-            }
+
             public void onDrawerClosed(View drawerView){
-                toolbar.setTitle(toolbarTitle);
                 setContent(toolbarTitle);
-                invalidateOptionsMenu();
             }
         };
         toggle.setDrawerIndicatorEnabled(true);
@@ -96,34 +79,6 @@ public class ToolbarActivity extends ActionBarActivity {
         }
         setContent(toolbarTitle);
         Log.v(Globals.TAG,"Ha llegado al final de onCreate");
-        Log.v(Globals.TAG,"CIFRADO2:");
-        String key = "MTIzNDU2Nzg5MDk4NzY1NA==";
-        String iv = "NzYzNDI1MTA5ODQ2MzgyNQ==";
-        String input = null;
-        try {
-            input = Base64.encodeToString("Prueba".getBytes("UTF-8"), Base64.DEFAULT);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        String aad = "12457423556432ghdf";
-        GaloisCounterMode gcm = new GaloisCounterMode();
-        try {
-            String[] encrypt = gcm.GCMEncrypt(key, iv, input, aad);
-            String[] decrypt = gcm.GCMDecrypt(key, iv, encrypt[0], aad);
-            String decode = new String(Base64.decode(decrypt[0], Base64.DEFAULT),"UTF-8");
-            System.out.println("Salida encrypt: " + encrypt[0]);
-            System.out.println("Salida decrypt: "+decrypt[0]);
-            System.out.println("Salida: " + decode);
-        } catch (InvalidKeyException | NoSuchAlgorithmException
-                | NoSuchProviderException | NoSuchPaddingException
-                | IllegalBlockSizeException | BadPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
     }
 
 

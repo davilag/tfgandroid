@@ -32,7 +32,7 @@
                 android:textSize="25dp"
                 android:id="@+id/inicial_fila"
                 android:textColor="@color/white"/>
-            </RelativeLayout>
+        </RelativeLayout>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -50,15 +50,5 @@
             android:text="Usuario"
             android:layout_below="@+id/list_container_dominio"
             android:layout_marginTop="12dp"/>
-        <ImageButton
-            android:layout_width="48dp"
-            android:layout_height="match_parent"
-            android:src="@drawable/ic_clear_black_24dp"
-            android:id="@+id/list_request_cancel"
-            android:background="@drawable/ripple"
-            android:layout_alignParentEnd="true"
-            android:layout_marginRight="18dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentBottom="true" />
     </RelativeLayout>
 </android.support.v7.widget.CardView>

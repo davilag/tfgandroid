@@ -64,7 +64,7 @@ public class ResponseService extends IntentService{
                         String iv = "NzYzNDI1MTA5ODQ2MzgyNQ==";
                         GaloisCounterMode gcm = new GaloisCounterMode();
                         try {
-                            String dominioEnc = gcm.GCMEncrypt(key,iv,dominio,"MTIzNDU2Nzg5MDk4NzY1NA")[0];
+                            String dominioEnc = gcm.GCMEncrypt(key,iv,dominio,"MTIzNDU2Nzg5MDk4NzY1NA");
                             Log.v(Globals.TAG,"dominioEn: "+dominioEnc);
                             return ServerMessage.sendResponseMessage(getApplicationContext(), mail, user, dominioEnc, pass, regID, reqId);
                         } catch (Exception e) {

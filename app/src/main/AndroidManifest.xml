@@ -65,8 +65,15 @@
         <activity
             android:name=".ElegirUserActivity"
             android:label="@string/title_activity_elegir_user"
-            android:theme="@style/Toolbar">
+            android:theme="@style/Toolbar" >
+        </activity>
+        <activity
+            android:name=".info_activity.InfoActivity"
+            android:label="@string/title_activity_info"
+            android:parentActivityName=".ToolbarActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="es.davilag.passtochrome.ToolbarActivity" />
         </activity>
     </application>
-
 </manifest>

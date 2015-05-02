@@ -143,7 +143,7 @@ public class GcmIntentService extends IntentService {
         Log.v(Globals.TAG,"El dominio de entrada es: '"+domain+"'");
         GaloisCounterMode gcm = new GaloisCounterMode();
         try {
-            domain = gcm.GCMDecrypt(key,iv,domain,"MTIzNDU2Nzg5MDk4NzY1NA")[0];
+            domain = gcm.GCMDecrypt(key,iv,domain,"MTIzNDU2Nzg5MDk4NzY1NA");
             Log.v(Globals.TAG,"El dominio de entrada es: '"+domain+"'");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -197,11 +197,12 @@ public class GcmIntentService extends IntentService {
                 }.execute(reqId,domain);
             }else{
                 //No tengo ningun usuario del dominio de la peticion.
+                Log.v(Globals.TAG,"No tengo ningun usuario con el dominio qe me piden");
                 SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
                 String regId = prefs.getString(Globals.REG_ID,"");
                 String mail = prefs.getString(Globals.MAIL,"");
                 try {
-                    ServerMessage.sendResponseMessage(getApplicationContext(), mail, "", domain, Globals.NO_PASSWD, regId, reqId);
+                    ServerMessage.sendResponseMessage(getApplicationContext(), mail, "", gcm.GCMEncrypt(key,iv,domain,"MTIzNDU2Nzg5MDk4NzY1NA"), Globals.NO_PASSWD, regId, reqId);
                     Log.v(Globals.TAG,"No tengo el usuario que me piden");
                 } catch (Exception e) {
                     e.printStackTrace();
