@@ -43,6 +43,7 @@ import java.util.List;
 
 import es.davilag.passtochrome.database.BaseDatosWrapper;
 import es.davilag.passtochrome.http.ServerMessage;
+import es.davilag.passtochrome.security.Security;
 
 
 /**
@@ -73,8 +74,24 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
     private Button mEmailSignInButton;
 
     @Override
+    protected void onStart(){
+        super.onStart();
+        if(amIRegistered()){
+            Intent i = new Intent(this, ToolbarActivity.class);
+            i.putExtra(Globals.INTENT_CONTENT,getResources().getString(R.string.container_title));
+            startActivity(i);
+            finish();
+        }
+    }
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(amIRegistered()){
+            Intent i = new Intent(this, ToolbarActivity.class);
+            i.putExtra(Globals.INTENT_CONTENT,getResources().getString(R.string.container_title));
+            startActivity(i);
+            finish();
+        }
         setContentView(R.layout.activity_login);
 
         context = getApplicationContext();
@@ -128,16 +145,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
         }.start();
     }
 
-    @Override
-    protected void onStart(){
-        super.onStart();
-        if(amIRegistered()){
-            Intent i = new Intent(this, ToolbarActivity.class);
-            i.putExtra(Globals.INTENT_CONTENT,getResources().getString(R.string.container_title));
-            startActivity(i);
-            finish();
-        }
-    }
     public void setRegisterDisabled(){
         if(mEmailSignInButton!=null){
             mEmailSignInButton.setEnabled(false);
@@ -421,6 +428,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
                 Intent i = new Intent(context,ToolbarActivity.class);
                 i.putExtra(Globals.INTENT_CONTENT,getResources().getString(R.string.container_title));
                 startActivity(i);
+                finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
@@ -465,6 +473,10 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor>{
 
             }
         }.execute();
+    }
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 }
 

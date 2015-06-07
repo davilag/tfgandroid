@@ -6,6 +6,9 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 
+import es.davilag.passtochrome.security.GaloisCounterMode;
+import es.davilag.passtochrome.security.Security;
+
 /**
  * Created by davilag on 29/11/14.
  */
@@ -37,13 +40,13 @@ public class BaseDatosWrapper {
         return requests;
     }
 
-    public static String getAndRemoveRequestDomain(Context c, String reqId){
+    public static Request getAndRemoveRequestDomain(Context c, String reqId){
         PTCDbHelper helper = new PTCDbHelper(c);
         SQLiteDatabase db = helper.getReadableDatabase();
-        String dom = helper.getRequestDom(db, reqId);
+        Request req = helper.getRequestDom(db, reqId);
         helper.removeRequest(db,reqId);
         db.close();
-        return dom;
+        return req;
     }
     public static void removeRequest(Context c, String reqId){
         PTCDbHelper helper = new PTCDbHelper(c);
@@ -77,24 +80,27 @@ public class BaseDatosWrapper {
         }
     }
 
-    public static String getPass(Context c, String dom, String user){
+    public static String[] getPass(Context c, String dom, String user){
         PTCDbHelper helper= new PTCDbHelper(c);
         SQLiteDatabase db = helper.getReadableDatabase();
-        String pass = helper.getPassContainer(db,dom,user);
+        String[] pass = helper.getPassContainer(db,dom,user);
         db.close();
         return  pass;
     }
 
-    public static boolean changePass(Context c, String dom, String user, String oldPass, String newPass){
-        PTCDbHelper helper = new PTCDbHelper(c);
-        SQLiteDatabase db = helper.getWritableDatabase();
-        String oldPassGuardada = helper.getPassContainer(db,dom,user);
-        if(oldPassGuardada.equals(oldPass)){
-            helper.modPassContainer(db,dom,user,newPass);
+    public static boolean changePass(Context c, String newDom, String newUser, String newPass,
+                                     String oldDom, String oldUser, String passContainer){
+        Security sec = new Security(c,passContainer);
+        if(sec.correctPassPhrase()){
+            PTCDbHelper helper = new PTCDbHelper(c);
+            String iv = GaloisCounterMode.getIv();
+            String newPassCipher = sec.cipherUserPass(newUser,newPass,iv);
+            SQLiteDatabase db = helper.getWritableDatabase();
+            helper.modPassContainer(db,newDom,newUser,newPassCipher,oldDom,oldUser,iv);
+            db.close();
             db.close();
             return true;
         }
-        db.close();
         return false;
     }
 

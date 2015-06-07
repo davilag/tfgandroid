@@ -21,13 +21,15 @@ public class PTCDbHelper extends SQLiteOpenHelper {
     private static final String SQL_CREATE_ENTRIES_REQUESTS =
             "CREATE TABLE "+ PTCDbContract.RequestTable.TABLE_NAME+" (" +
                     PTCDbContract.RequestTable.COLUMN_NAME_ID+TEXT_TYPE+" PRIMARY KEY, "+
-                    PTCDbContract.RequestTable.COLUMN_NAME_DOM+TEXT_TYPE+
+                    PTCDbContract.RequestTable.COLUMN_NAME_DOM+TEXT_TYPE+COMMA_SEP+
+                    PTCDbContract.RequestTable.COLUMN_NAME_NONCE+
                     ")";
 
     private static final String SQL_CREATE_ENTRIES_CONTAINER =
             "CREATE TABLE "+PTCDbContract.ContainerTable.TABLE_NAME+" ("+
                     PTCDbContract.ContainerTable.COLUMN_NAME_DOM+TEXT_TYPE+COMMA_SEP+
                     PTCDbContract.ContainerTable.COLUMN_NAME_USER+TEXT_TYPE+COMMA_SEP+
+                    PTCDbContract.ContainerTable.COLUMN_NAME_IV+TEXT_TYPE+COMMA_SEP+
                     PTCDbContract.ContainerTable.COLUMN_NAME_PASS+TEXT_TYPE+COMMA_SEP+
                     "PRIMARY KEY ("+PTCDbContract.ContainerTable.COLUMN_NAME_DOM+COMMA_SEP+
                     PTCDbContract.ContainerTable.COLUMN_NAME_USER+"))";
@@ -75,12 +77,14 @@ public class PTCDbHelper extends SQLiteOpenHelper {
     public void addRequest(SQLiteDatabase db, Request r){
         Log.v(Globals.TAG,"He ejecutado en la bd: INSERT INTO "+ PTCDbContract.RequestTable.TABLE_NAME+"("+
                 PTCDbContract.RequestTable.COLUMN_NAME_ID+COMMA_SEP+
-                PTCDbContract.RequestTable.COLUMN_NAME_DOM+")"+
+                PTCDbContract.RequestTable.COLUMN_NAME_DOM+COMMA_SEP+
+                PTCDbContract.RequestTable.COLUMN_NAME_NONCE+")"+
                 "VALUES("+COMILLA+r.getReqId()+COMILLA+COMMA_SEP+COMILLA+r.getDom()+COMILLA+");");
         db.execSQL("INSERT INTO "+ PTCDbContract.RequestTable.TABLE_NAME+"("+
-                        PTCDbContract.RequestTable.COLUMN_NAME_ID+COMMA_SEP+
-                        PTCDbContract.RequestTable.COLUMN_NAME_DOM+")"+
-                        "VALUES("+COMILLA+r.getReqId()+COMILLA+COMMA_SEP+COMILLA+r.getDom()+COMILLA+");");
+                PTCDbContract.RequestTable.COLUMN_NAME_ID+COMMA_SEP+
+                PTCDbContract.RequestTable.COLUMN_NAME_DOM+COMMA_SEP+
+                PTCDbContract.RequestTable.COLUMN_NAME_NONCE+")"+
+                        "VALUES("+COMILLA+r.getReqId()+COMILLA+COMMA_SEP+COMILLA+r.getDom()+COMILLA+COMMA_SEP+COMILLA+r.getNonce()+COMILLA+");");
     }
 
     public ArrayList<Request> getRequests(SQLiteDatabase db){
@@ -91,30 +95,32 @@ public class PTCDbHelper extends SQLiteOpenHelper {
             while(c.moveToNext()){
                 String reqId = c.getString(0);
                 String dom = c.getString(1);
+                String nonce = c.getString(2);
 
                 if(reqId!=null&&dom!=null){
-                    requests.add(new Request(reqId,dom));
+                    requests.add(new Request(reqId,dom,nonce));
                 }
             }
         }
         return requests;
     }
 
-    public String getRequestDom(SQLiteDatabase db, String reqId){
-        String dom = null;
-        Log.v(Globals.TAG,"Voy a ejecutar: SELECT "+ PTCDbContract.RequestTable.COLUMN_NAME_DOM +
+    public Request getRequestDom(SQLiteDatabase db, String reqId){
+        Request req = null;
+        Log.v(Globals.TAG,"Voy a ejecutar: SELECT "+ PTCDbContract.RequestTable.COLUMN_NAME_DOM +COMMA_SEP+PTCDbContract.RequestTable.COLUMN_NAME_NONCE+
                                                  " FROM "+PTCDbContract.RequestTable.TABLE_NAME +
                                                  " WHERE "+ PTCDbContract.RequestTable.COLUMN_NAME_ID+"="+COMILLA+reqId+COMILLA);
-        Cursor c = db.rawQuery("SELECT "+ PTCDbContract.RequestTable.COLUMN_NAME_DOM+
-                                " FROM "+PTCDbContract.RequestTable.TABLE_NAME+
-                                " WHERE "+ PTCDbContract.RequestTable.COLUMN_NAME_ID+"="+COMILLA+reqId+COMILLA,new String[]{});
+        Cursor c = db.rawQuery("SELECT "+ PTCDbContract.RequestTable.COLUMN_NAME_DOM +COMMA_SEP+PTCDbContract.RequestTable.COLUMN_NAME_NONCE+
+                " FROM "+PTCDbContract.RequestTable.TABLE_NAME +
+                " WHERE "+ PTCDbContract.RequestTable.COLUMN_NAME_ID+"="+COMILLA+reqId+COMILLA,new String[]{});
         if(c!=null){
             if(c.moveToNext()){
-                dom = c.getString(0);
+                String dom  = c.getString(0);
+                String nonce = c.getString(1);
+                req = new Request(reqId,dom,nonce);
             }
         }
-        Log.v(Globals.TAG,"El dominio es: "+dom);
-        return dom;
+        return req;
     }
 
     public void removeRequest(SQLiteDatabase db, String reqId){
@@ -139,37 +145,43 @@ public class PTCDbHelper extends SQLiteOpenHelper {
         Log.v(Globals.TAG,"Voy a ejecutar: INSERT INTO "+PTCDbContract.ContainerTable.TABLE_NAME+"("+
                 PTCDbContract.ContainerTable.COLUMN_NAME_DOM+COMMA_SEP+
                 PTCDbContract.ContainerTable.COLUMN_NAME_USER+COMMA_SEP+
-                PTCDbContract.ContainerTable.COLUMN_NAME_PASS+")"+
+                PTCDbContract.ContainerTable.COLUMN_NAME_PASS+COMMA_SEP+
+                PTCDbContract.ContainerTable.COLUMN_NAME_IV+")"+
                 "VALUES("+COMILLA+fila.getDom()+COMILLA+COMMA_SEP+
                 COMILLA+fila.getUsuario()+COMILLA+COMMA_SEP+
-                COMILLA+fila.getPass()+COMILLA+");");
+                COMILLA+fila.getPass()+COMILLA+COMMA_SEP+
+                COMILLA+fila.getIv()+COMILLA+");");
         db.execSQL("INSERT INTO "+PTCDbContract.ContainerTable.TABLE_NAME+"("+
                     PTCDbContract.ContainerTable.COLUMN_NAME_DOM+COMMA_SEP+
                     PTCDbContract.ContainerTable.COLUMN_NAME_USER+COMMA_SEP+
-                    PTCDbContract.ContainerTable.COLUMN_NAME_PASS+")"+
+                    PTCDbContract.ContainerTable.COLUMN_NAME_PASS+COMMA_SEP+
+                    PTCDbContract.ContainerTable.COLUMN_NAME_IV+")"+
                     "VALUES("+COMILLA+fila.getDom()+COMILLA+COMMA_SEP+
                               COMILLA+fila.getUsuario()+COMILLA+COMMA_SEP+
-                              COMILLA+fila.getPass()+COMILLA+");");
+                              COMILLA+fila.getPass()+COMILLA+COMMA_SEP+
+                              COMILLA+fila.getIv()+COMILLA+");");
     }
 
     public void delPassContainer(SQLiteDatabase db, String domName, String userName){
-        db.execSQL("DELETE FROM "+PTCDbContract.ContainerTable.TABLE_NAME+"WHERE "+
-                    PTCDbContract.ContainerTable.COLUMN_NAME_DOM+"="+COMILLA+domName+COMILLA+"AND"+
+        db.execSQL("DELETE FROM "+PTCDbContract.ContainerTable.TABLE_NAME+" WHERE "+
+                    PTCDbContract.ContainerTable.COLUMN_NAME_DOM+"="+COMILLA+domName+COMILLA+" AND "+
                     PTCDbContract.ContainerTable.COLUMN_NAME_USER+"="+COMILLA+userName+COMILLA+";");
     }
-    public String getPassContainer(SQLiteDatabase db, String dom, String userName){
-        String pass = null;
+    public String[] getPassContainer(SQLiteDatabase db, String dom, String userName){
+        String[] pass = null;
         Cursor c = db.rawQuery("SELECT "+PTCDbContract.ContainerTable.COLUMN_NAME_PASS+COMMA_SEP+
-                PTCDbContract.ContainerTable.COLUMN_NAME_USER+" FROM "+PTCDbContract.ContainerTable.TABLE_NAME+" WHERE "+PTCDbContract.ContainerTable.COLUMN_NAME_DOM+
+                PTCDbContract.ContainerTable.COLUMN_NAME_USER+COMMA_SEP+PTCDbContract.ContainerTable.COLUMN_NAME_IV+" FROM "+PTCDbContract.ContainerTable.TABLE_NAME+" WHERE "+PTCDbContract.ContainerTable.COLUMN_NAME_DOM+
                             " = "+COMILLA+dom+COMILLA, new String[]{});
         if(c!=null){
             if(c.getCount()>0){
                 if(userName.equals("")){
-                    return "";
+                    return new String[0];
                 }else{
                     while(c.moveToNext()){
+                        pass = new String[2];
                         String user = c.getString(1);
-                        pass = c.getString(0);
+                        pass[0] = c.getString(2);
+                        pass[1] = c.getString(0);
                         Log.v(Globals.TAG,"El usuario que he cogido es: "+user+" La contraseña es: "+pass);
                         if(user.equals(userName))
                             return pass;
@@ -180,13 +192,20 @@ public class PTCDbHelper extends SQLiteOpenHelper {
         return pass;
     }
 
-    public void modPassContainer(SQLiteDatabase db, String dom, String userName, String newPass){
-        Log.v(Globals.TAG,"Voy a ejecutar: UPDATE "+PTCDbContract.ContainerTable.TABLE_NAME+" SET "+PTCDbContract.ContainerTable.COLUMN_NAME_PASS+"="+COMILLA+newPass+COMILLA+
-                "WHERE "+PTCDbContract.ContainerTable.COLUMN_NAME_USER+"="+COMILLA+userName+COMILLA+
-                " AND "+PTCDbContract.ContainerTable.COLUMN_NAME_DOM+"="+COMILLA+dom+COMILLA+");");
-        db.execSQL("UPDATE "+PTCDbContract.ContainerTable.TABLE_NAME+" SET "+PTCDbContract.ContainerTable.COLUMN_NAME_PASS+"="+COMILLA+newPass+COMILLA+
-                    "WHERE "+PTCDbContract.ContainerTable.COLUMN_NAME_USER+"="+COMILLA+userName+COMILLA+
-                    " AND "+PTCDbContract.ContainerTable.COLUMN_NAME_DOM+"="+COMILLA+dom+COMILLA+");");
+    public void modPassContainer(SQLiteDatabase db, String newDom, String newUserName, String newPass, String oldDom, String oldUsername, String iv){
+
+        Log.v(Globals.TAG,"Voy a ejecutar: UPDATE "+PTCDbContract.ContainerTable.TABLE_NAME+" SET "+PTCDbContract.ContainerTable.COLUMN_NAME_USER+"="+COMILLA+newUserName+COMILLA+","+
+                PTCDbContract.ContainerTable.COLUMN_NAME_DOM+"="+COMILLA+newDom+COMILLA+","+PTCDbContract.ContainerTable.COLUMN_NAME_IV+"="+COMILLA+iv+COMILLA+","+
+                PTCDbContract.ContainerTable.COLUMN_NAME_PASS+"="+COMILLA+newPass+COMILLA+
+                " WHERE "+PTCDbContract.ContainerTable.COLUMN_NAME_DOM+"="+COMILLA+oldDom+COMILLA+" AND "
+                +PTCDbContract.ContainerTable.COLUMN_NAME_USER+"="+COMILLA+oldUsername+COMILLA+";");
+
+
+        db.execSQL("UPDATE "+PTCDbContract.ContainerTable.TABLE_NAME+" SET "+PTCDbContract.ContainerTable.COLUMN_NAME_USER+"="+COMILLA+newUserName+COMILLA+","+
+                    PTCDbContract.ContainerTable.COLUMN_NAME_DOM+"="+COMILLA+newDom+COMILLA+","+PTCDbContract.ContainerTable.COLUMN_NAME_IV+"="+COMILLA+iv+COMILLA+","+
+                    PTCDbContract.ContainerTable.COLUMN_NAME_PASS+"="+COMILLA+newPass+COMILLA+
+                    " WHERE "+PTCDbContract.ContainerTable.COLUMN_NAME_DOM+"="+COMILLA+oldDom+COMILLA+" AND "
+                    +PTCDbContract.ContainerTable.COLUMN_NAME_USER+"="+COMILLA+oldUsername+COMILLA+";");
     }
 
     public ArrayList<FilaContenedor> getListaContenedor(SQLiteDatabase db){
@@ -197,7 +216,7 @@ public class PTCDbHelper extends SQLiteOpenHelper {
                 String dom = c.getString(0);
                 String user = c.getString(1);
                 if(dom!=null && user!=null){
-                    filas.add(new FilaContenedor(user,null,dom));//Para los mostrar por pantalla los dominios guardados no tenemos que sacar las contraseñas.
+                    filas.add(new FilaContenedor(user,null,dom,null));//Para los mostrar por pantalla los dominios guardados no tenemos que sacar las contraseñas.
                 }
             }
         }
@@ -225,7 +244,7 @@ public class PTCDbHelper extends SQLiteOpenHelper {
         if(c!=null){
             domains = new ArrayList<>();
             while(c.moveToNext()){
-                domains.add(new FilaContenedor(null,null,c.getString(0)));
+                domains.add(new FilaContenedor(null,null,c.getString(0),null));
             }
         }
         return domains;

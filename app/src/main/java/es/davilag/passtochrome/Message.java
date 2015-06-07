@@ -7,18 +7,18 @@ import java.util.Set;
  * Created by davilag on 22/10/14.
  */
 public class Message {
-    private HashMap<String,String> data;
+    private HashMap<String,Object> data;
 
     public Message(){
-        data = new HashMap<String,String>();
+        data = new HashMap<String,Object>();
     }
 
 
-    public void setData(HashMap<String, String> data) {
+    public void setData(HashMap<String, Object> data) {
         this.data = data;
     }
 
-    public void addData(String key, String value){
+    public void addData(String key, Object value){
         this.data.put(key, value);
     }
 
@@ -26,12 +26,12 @@ public class Message {
         return this.data.keySet();
     }
 
-    public String value(String key){
+    public Object value(Object key){
         return this.data.get(key);
     }
 
 
-    public HashMap<String, String> getData() {
+    public HashMap<String, Object> getData() {
         return data;
     }
 }

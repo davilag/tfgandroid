@@ -11,6 +11,7 @@ public final class PTCDbContract {
     public static abstract class RequestTable implements BaseColumns{
         public static final String TABLE_NAME = "TB_REQUESTS";
         public static final String COLUMN_NAME_ID = "REQ_ID";
+        public static final String COLUMN_NAME_NONCE = "NONCE";
         public static final String COLUMN_NAME_DOM = "DOM_NAME";
     }
 
@@ -19,5 +20,6 @@ public final class PTCDbContract {
         public static final String COLUMN_NAME_DOM = "DOM_NAME";
         public static final String COLUMN_NAME_USER = "USER";
         public static final String COLUMN_NAME_PASS= "PASSWORD";
+        public static final String COLUMN_NAME_IV = "IV";
     }
 }

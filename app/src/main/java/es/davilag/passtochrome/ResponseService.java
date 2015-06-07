@@ -9,8 +9,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import es.davilag.passtochrome.database.BaseDatosWrapper;
+import es.davilag.passtochrome.database.Request;
 import es.davilag.passtochrome.http.ServerMessage;
-import es.davilag.passtochrome.security.GaloisCounterMode;
 
 /**
  * Created by davilag on 01/10/14.
@@ -34,39 +34,37 @@ public class ResponseService extends IntentService{
         final SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS, Context.MODE_PRIVATE);
         final String reqId = intent.getStringExtra(Globals.INTENT_REQ_ID);
         if(reqId!=null) {
-            final String dominio = BaseDatosWrapper.getAndRemoveRequestDomain(getApplicationContext(),reqId);
+            final Request req = BaseDatosWrapper.getAndRemoveRequestDomain(getApplicationContext(),reqId);
             String user = intent.getStringExtra(Globals.INTENT_USER);
             /*
             Hilo para enviar el mensaje de respuesta.
              */
-            if(dominio!=null){
-                new AsyncTask<String, Void, Boolean>() {
+            if(req!=null){
+                new AsyncTask<Object, Void, Boolean>() {
 
                     @Override
-                    protected Boolean doInBackground(String... params) {
+                    protected Boolean doInBackground(Object... params) {
+                        Request req = (Request)params[0];
                         String user;
                         if(params[1]==null){
-                            String[] users = BaseDatosWrapper.getUsers(getApplicationContext(),params[0]);
+                            String[] users = BaseDatosWrapper.getUsers(getApplicationContext(),req.getDom());
                             user = users[0];
                         }else{
-                            user = params[1];
+                            user = (String)params[1];
                         }
-                        String pass = BaseDatosWrapper.getPass(getApplicationContext(),params[0],user);
+                        String[] ivPass = BaseDatosWrapper.getPass(getApplicationContext(),req.getDom(),user); //posicion 0 iv posicion 1 pass y user cifrados
                         String mail = prefs.getString(Globals.MAIL, "");
-                        String regID = prefs.getString(Globals.REG_ID, "");
-
+                        Long nonce = new Long(req.getNonce());
+                        nonce ++;
+                        String ivPassAlm = ivPass[0];
+                        String pass = ivPass[1];
                         Log.e(Globals.TAG, "Voy a responder");
                         Log.v(Globals.TAG,"dominio: '"+params[0]+"'");
                         Log.v(Globals.TAG,"pass: "+pass);
                         Log.v(Globals.TAG,"mail: "+mail);
                         Log.v(Globals.TAG,"Llega una peticion");
-                        String key = "MTIzNDU2Nzg5MDk4NzY1NA==";
-                        String iv = "NzYzNDI1MTA5ODQ2MzgyNQ==";
-                        GaloisCounterMode gcm = new GaloisCounterMode();
                         try {
-                            String dominioEnc = gcm.GCMEncrypt(key,iv,dominio,"MTIzNDU2Nzg5MDk4NzY1NA");
-                            Log.v(Globals.TAG,"dominioEn: "+dominioEnc);
-                            return ServerMessage.sendResponseMessage(getApplicationContext(), mail, user, dominioEnc, pass, regID, reqId);
+                            return ServerMessage.sendResponseMessage(getApplicationContext(), req.getDom(), pass, ivPassAlm, reqId,nonce,Globals.MSG_STATE_OK);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -82,7 +80,7 @@ public class ResponseService extends IntentService{
                             sendBroadcast(i);
                         }
                     }
-                }.execute(dominio,user);
+                }.execute(req,user);
             }
         }
     }

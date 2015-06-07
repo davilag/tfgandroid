@@ -7,11 +7,13 @@ public class FilaContenedor {
     private String usuario;
     private String pass;
     private String dom;
+    private String iv;
 
-    public FilaContenedor(String usuario, String pass, String dom) {
+    public FilaContenedor(String usuario, String pass, String dom,String iv) {
         this.usuario = usuario;
         this.pass = pass;
         this.dom = dom;
+        this.iv = iv;
     }
 
     public String getUsuario() {
@@ -24,5 +26,9 @@ public class FilaContenedor {
 
     public String getDom() {
         return dom;
+    }
+
+    public String getIv() {
+        return iv;
     }
 }

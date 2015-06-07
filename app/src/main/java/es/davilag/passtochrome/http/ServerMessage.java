@@ -7,6 +7,7 @@ import android.content.res.AssetManager;
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -23,6 +24,8 @@ import javax.net.ssl.SSLSession;
 import es.davilag.passtochrome.Globals;
 import es.davilag.passtochrome.Message;
 import es.davilag.passtochrome.R;
+import es.davilag.passtochrome.security.GaloisCounterMode;
+import es.davilag.passtochrome.security.Security;
 
 /**
  * Created by davilag on 22/10/14.
@@ -67,7 +70,7 @@ public class ServerMessage {
     }
     public static boolean  sendRegisterMessage(String mail,String regId,String serverKey, Context context) throws Exception {
         SSLContext sslContext = generateSSLContext(context);
-        URL obj = new URL(Globals.SERVER_DIR+"/PTC/register");
+        URL obj = new URL(Globals.SERVER_DIR_SEC+"/PTC/register");
         HttpURLConnection con = null;
         ((HttpsURLConnection)con).setDefaultHostnameVerifier(new NullHostNameVerifier());
         con = (HttpURLConnection) obj.openConnection();
@@ -80,7 +83,6 @@ public class ServerMessage {
         con.setDoInput(true);
         ObjectMapper om = new ObjectMapper();
         Message m = new Message();
-        m.addData(Globals.MSG_ACTION,Globals.ACTION_REGISTER);
         m.addData(Globals.MSG_MAIL,mail);
         m.addData(Globals.MSG_REG_ID,regId);
         m.addData(Globals.MSG_ROLE,Globals.ACTION_CONTAINER);
@@ -107,7 +109,7 @@ public class ServerMessage {
         return false;
     }
 
-    public static boolean sendResponseMessage(Context c, String mail, String user, String dominio, String pass, String regId,String reqId) throws Exception{
+    public static boolean sendResponseMessage(Context c, String dominio, String pass, String ivPass,String reqId, Long nonce,String estado) throws Exception{
         SSLContext sslContext = generateSSLContext(c);
         URL obj = new URL(Globals.SERVER_DIR+"/PTC/response");
         HttpURLConnection con = null;
@@ -116,18 +118,26 @@ public class ServerMessage {
         if(con instanceof HttpsURLConnection) {
             ((HttpsURLConnection)con).setSSLSocketFactory(sslContext.getSocketFactory());
         }
+        Message messagePayload = new Message();
+        messagePayload.addData(Globals.MSG_DOMAIN, dominio);
+        messagePayload.addData(Globals.MSG_NONCE,nonce);
+        messagePayload.addData(Globals.MSG_STATE,estado);
+        messagePayload.addData(Globals.MSG_TS, System.currentTimeMillis());
+        messagePayload.addData(Globals.MSG_PASSWD, pass);
+        messagePayload.addData(Globals.MSG_IV,ivPass);
+        ObjectWriter ow = new ObjectMapper().writer();
+        String payloadPlain = ow.writeValueAsString(messagePayload);
+        Log.v(Globals.TAG,"El payload de respuesta en plano es: "+payloadPlain);
+        String serverKey = Security.getServerKey(c);
+        String iv = GaloisCounterMode.getIv();
+        String payloadCipher = GaloisCounterMode.GCMEncrypt(serverKey,iv,payloadPlain,reqId);
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json");
         ObjectMapper om = new ObjectMapper();
         Message m = new Message();
-        m.addData(Globals.MSG_ACTION,Globals.ACTION_REQUEST);
-        m.addData(Globals.MSG_MAIL,mail);
-        m.addData(Globals.MSG_DOMAIN,dominio);
-        m.addData(Globals.MSG_PASSWD,pass);
-        m.addData(Globals.MSG_REG_ID,regId);
-        m.addData(Globals.MSG_REQ_ID,reqId);
-        m.addData(Globals.MSG_USER,user);
-        m.addData(Globals.MSG_SERVER_KEY,getServerKey(c));
+        m.addData(Globals.MSG_IV,iv);
+        m.addData(Globals.MSG_AAD,reqId);
+        m.addData(Globals.MSG_PAYLOAD,payloadCipher);
         DataOutputStream dos = new DataOutputStream(con.getOutputStream());
         om.writeValue(dos,m);
         dos.flush();
@@ -154,7 +164,7 @@ public class ServerMessage {
         return false;
     }
 
-    public static boolean sendSavedPassResponse(Context c, String reqId, String saved, String mail) throws Exception{
+    public static boolean sendSavedPassResponse(Context c, String reqId, Boolean saved, String mail,Long nonce) throws Exception{
         SSLContext sslContext = generateSSLContext(c);
         URL obj = new URL(Globals.SERVER_DIR+"/PTC/savedres");
         HttpURLConnection con = null;
@@ -163,15 +173,27 @@ public class ServerMessage {
         if(con instanceof HttpsURLConnection) {
             ((HttpsURLConnection)con).setSSLSocketFactory(sslContext.getSocketFactory());
         }
+        Message messagePayload = new Message();
+        if(saved){
+            messagePayload.addData(Globals.MSG_STATE,Globals.MSG_STATE_OK);
+        }else{
+            messagePayload.addData(Globals.MSG_STATE,Globals.MSG_STATE_FAIL);
+        }
+        messagePayload.addData(Globals.MSG_NONCE,nonce);
+        messagePayload.addData(Globals.MSG_TS, System.currentTimeMillis());
+        ObjectWriter ow = new ObjectMapper().writer();
+        String payloadPlain = ow.writeValueAsString(messagePayload);
+        Log.v(Globals.TAG, "El payload de respuesta en plano es: " + payloadPlain);
+        String serverKey = Security.getServerKey(c);
+        String iv = GaloisCounterMode.getIv();
+        String payloadCipher = GaloisCounterMode.GCMEncrypt(serverKey,iv,payloadPlain,reqId);
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json");
         ObjectMapper om = new ObjectMapper();
         Message m = new Message();
-        m.addData(Globals.MSG_ACTION,Globals.ACTION_REQUEST);
-        m.addData(Globals.MSG_MAIL,mail);
-        m.addData(Globals.MSG_REQ_ID,reqId);
-        m.addData(Globals.MSG_SERVER_KEY,getServerKey(c));
-        m.addData(Globals.MSG_SAVED_PASS,saved);
+        m.addData(Globals.MSG_IV,iv);
+        m.addData(Globals.MSG_AAD,reqId);
+        m.addData(Globals.MSG_PAYLOAD,payloadCipher);
         DataOutputStream dos = new DataOutputStream(con.getOutputStream());
         om.writeValue(dos,m);
         dos.flush();
@@ -199,7 +221,7 @@ public class ServerMessage {
 
     }
 
-    public static boolean sendLogoutMessage(Context c) throws Exception {
+    public static boolean sendLogoutMessage(Context c, String serverKey,String regId,String mail) throws Exception {
         SSLContext sslContext = generateSSLContext(c);
         URL obj = new URL(Globals.SERVER_DIR+"/PTC/logout");
         HttpURLConnection con = null;
@@ -208,17 +230,24 @@ public class ServerMessage {
         if(con instanceof HttpsURLConnection) {
             ((HttpsURLConnection)con).setSSLSocketFactory(sslContext.getSocketFactory());
         }
-        SharedPreferences prefs = c.getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
+        Log.v(Globals.TAG,"Voy a enviar el mensaje de logout");
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type","application/json");
         con.setDoOutput(true);
         con.setDoInput(true);
         ObjectMapper om = new ObjectMapper();
+        Message payload = new Message();
+        payload.addData(Globals.MSG_REG_ID,regId);
+        payload.addData(Globals.MSG_TS,System.currentTimeMillis());
+        String iv = GaloisCounterMode.getIv();
+        ObjectWriter ow = om.writer();
+        String payloadPlain = ow.writeValueAsString(payload);
+        String aad = mail;
+        String payloadCipher = GaloisCounterMode.GCMEncrypt(serverKey,iv,payloadPlain,aad);
         Message m = new Message();
-        m.addData(Globals.MSG_ACTION,Globals.ACTION_LOGOUT);
-        m.addData(Globals.MSG_MAIL,prefs.getString(Globals.MAIL,""));
-        m.addData(Globals.MSG_REG_ID,prefs.getString(Globals.REG_ID,""));
-        m.addData(Globals.MSG_SERVER_KEY,getServerKey(c));
+        m.addData(Globals.MSG_IV,iv);
+        m.addData(Globals.MSG_AAD,aad);
+        m.addData(Globals.MSG_PAYLOAD,payloadCipher);
         DataOutputStream dos = new DataOutputStream(con.getOutputStream());
         om.writeValue(dos,m);
         dos.flush();

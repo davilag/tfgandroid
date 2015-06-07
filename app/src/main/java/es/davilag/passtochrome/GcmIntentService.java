@@ -12,8 +12,12 @@ import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -32,6 +36,7 @@ import es.davilag.passtochrome.database.FilaContenedor;
 import es.davilag.passtochrome.database.Request;
 import es.davilag.passtochrome.http.ServerMessage;
 import es.davilag.passtochrome.security.GaloisCounterMode;
+import es.davilag.passtochrome.security.Security;
 
 /**
  * Servicio que se ejecuta cuando llega un mensaje de GCM para analizarlo.
@@ -48,6 +53,14 @@ public class GcmIntentService extends IntentService {
 
     public GcmIntentService() {
         super("GcmIntentService");
+    }
+
+    /*
+    Metodo para ver si estoy registrado en el servicio de PTC.
+     */
+    private boolean amIRegistered(){
+        SharedPreferences gcmPrefs = getSharedPreferences(Globals.GCM_PREFS, Context.MODE_PRIVATE);
+        return gcmPrefs.getBoolean(Globals.REGISTERED,false);
     }
 
     private boolean correctServerKey(String serverKey){
@@ -135,36 +148,12 @@ public class GcmIntentService extends IntentService {
         mNotificationManager.notify(NOTIFICATION_ID,builder.build());
     }
 
-    private void handleRequest(Bundle bundle){
+    private void handleRequest(Message message, final String reqId){
         Log.v(Globals.TAG,"Llega una peticion");
-        String key = "MTIzNDU2Nzg5MDk4NzY1NA==";
-        String iv = "NzYzNDI1MTA5ODQ2MzgyNQ==";
-        String domain = bundle.getString(Globals.MSG_DOMAIN);
-        Log.v(Globals.TAG,"El dominio de entrada es: '"+domain+"'");
-        GaloisCounterMode gcm = new GaloisCounterMode();
-        try {
-            domain = gcm.GCMDecrypt(key,iv,domain,"MTIzNDU2Nzg5MDk4NzY1NA");
-            Log.v(Globals.TAG,"El dominio de entrada es: '"+domain+"'");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchProviderException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        Log.v(Globals.TAG,"El dominio de descifrado es: "+domain);
-        final String reqId = bundle.getString(Globals.MSG_REQ_ID);
+        String domain = (String)message.value(Globals.MSG_DOMAIN);
+        Log.v(Globals.TAG, "El dominio de entrada es: "+domain);
         Log.v(Globals.TAG,"El reqId es: "+reqId);
+        Long nonce = new Long((int)message.value(Globals.MSG_NONCE));
         if(domain!=null) {
             String[] users = BaseDatosWrapper.getUsers(getApplicationContext(),domain);//En un principio no se indica que usuario voy a coger.
             if(users!=null && users.length>0){
@@ -172,7 +161,7 @@ public class GcmIntentService extends IntentService {
 
                     @Override
                     protected String[] doInBackground(String... params) {
-                        BaseDatosWrapper.insertRequest(getApplicationContext(),new Request(params[0],params[1]));
+                        BaseDatosWrapper.insertRequest(getApplicationContext(),new Request(params[0],params[1],params[2]));
                         ArrayList<Request> requests = BaseDatosWrapper.getRequests(getApplicationContext());
                         String[] domains = new String[requests.size()];
                         int i = 0;
@@ -194,15 +183,13 @@ public class GcmIntentService extends IntentService {
                         Intent intent = new Intent(Globals.REFRESH_CONTENT);
                         sendBroadcast(intent);
                     }
-                }.execute(reqId,domain);
+                }.execute(reqId,domain,nonce.toString());
             }else{
                 //No tengo ningun usuario del dominio de la peticion.
                 Log.v(Globals.TAG,"No tengo ningun usuario con el dominio qe me piden");
                 SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
-                String regId = prefs.getString(Globals.REG_ID,"");
-                String mail = prefs.getString(Globals.MAIL,"");
                 try {
-                    ServerMessage.sendResponseMessage(getApplicationContext(), mail, "", gcm.GCMEncrypt(key,iv,domain,"MTIzNDU2Nzg5MDk4NzY1NA"), Globals.NO_PASSWD, regId, reqId);
+                   ServerMessage.sendResponseMessage(getApplicationContext(), domain, "", "", reqId,++nonce,Globals.MSG_STATE_NO_PASSWD);
                     Log.v(Globals.TAG,"No tengo el usuario que me piden");
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -212,40 +199,40 @@ public class GcmIntentService extends IntentService {
         }
     }
 
-    private void handleClearNotification(Bundle bundle){
+    private void handleClearNotification(String aad){
         Log.v(Globals.TAG,"Ha llegado un mensaje para borrar la notificacion");
-        String reqId = bundle.getString(Globals.MSG_REQ_ID);
-        BaseDatosWrapper.removeRequest(getApplicationContext(),reqId);
+        BaseDatosWrapper.removeRequest(getApplicationContext(),aad);
         Intent i = new Intent(Globals.REFRESH_CONTENT);
         sendBroadcast(i);
         clearNotification();
     }
 
-    private void handleAddPass(Bundle bundle){
+    private void handleAddPass(Message bundle,String aad){
         Log.v(Globals.TAG,"Ha llegado un mensaje para añadir una contraseña.");
-        String username = bundle.getString(Globals.MSG_USER);
-        String pass = bundle.getString(Globals.MSG_PASSWD);
-        String dom = bundle.getString(Globals.MSG_DOMAIN);
-        String reqId = bundle.getString(Globals.MSG_REQ_ID);
+        String username = (String)bundle.value(Globals.MSG_USER);
+        String pass = (String)bundle.value(Globals.MSG_PAYLOAD);
+        String dom =(String) bundle.value(Globals.MSG_DOMAIN);
+        String reqId = aad;
+        String iv = (String)bundle.value(Globals.MSG_IV);
+        Long nonce = new Long((int)bundle.value(Globals.MSG_NONCE));
+        nonce ++;
         SharedPreferences prefs = getSharedPreferences(Globals.GCM_PREFS,Context.MODE_PRIVATE);
         String mail = prefs.getString(Globals.MAIL,"");
-        boolean added = BaseDatosWrapper.insertPass(getApplicationContext(),new FilaContenedor(username,pass,dom));
-        new AsyncTask<String,Void,Void>(){
+        Boolean added = BaseDatosWrapper.insertPass(getApplicationContext(),new FilaContenedor(username,pass,dom,iv));
+        Log.v(Globals.TAG,"Se ha insetado ya en la bbdd");
+        new AsyncTask<Object,Void,Void>(){
 
             @Override
-            protected Void doInBackground(String... params) {
+            protected Void doInBackground(Object... params) {
                 try {
                     Log.v(Globals.TAG,"Se va a enviar el mensaje de respuesta al añadir.");
-                    for(String s: params){
-                        Log.v(Globals.TAG,s);
-                    }
-                    ServerMessage.sendSavedPassResponse(getApplicationContext(),params[0],params[1],params[2]);
+                    ServerMessage.sendSavedPassResponse(getApplicationContext(),(String)params[0],(Boolean)params[1],(String)params[2],(Long)params[3]);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return null;
             }
-        }.execute(reqId, "" + added, mail);
+        }.execute(reqId, added, mail, nonce);
     }
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -264,23 +251,56 @@ public class GcmIntentService extends IntentService {
                         String key = it.next();
                         Log.e(Globals.TAG,"[" + key + "=" + bundle.get(key)+"]");
                     }
-                    String action = bundle.getString(Globals.MSG_ACTION);
-                    String serverKey = bundle.getString(Globals.MSG_SERVER_KEY);
-                    if(correctServerKey(serverKey)) {
-                        if (action.equals(Globals.ACTION_REGISTERED)) {
-                            Log.e(Globals.TAG, "Registro completo.");
-                            String email = bundle.getString(Globals.MSG_MAIL, "");
-                            setRegistered(email);
-                        } else if (action.equals(Globals.ACTION_REQUEST)) {
-                            handleRequest(bundle);
-                        } else if (action.equals(Globals.ACTION_CLEARNOTIF)) {
-                            handleClearNotification(bundle);
-                        }else if(action.equals(Globals.ACTION_ADD_PASS)){
-                            handleAddPass(bundle);
+                    String aad = bundle.getString(Globals.MSG_AAD);
+                    String iv = bundle.getString(Globals.MSG_IV);
+                    if(aad!=null && iv!=null && amIRegistered()) {
+                        String payloadCipher = bundle.getString(Globals.MSG_PAYLOAD);
+                        String serverKey = Security.getServerKey(getApplicationContext());
+                        try {
+                            String payloadPlain = GaloisCounterMode.GCMDecrypt(serverKey, iv, payloadCipher, aad);
+                            Log.v(Globals.TAG, "El payload en plano es: " + payloadPlain);
+                            ObjectMapper om = new ObjectMapper();
+                            Message message = om.readValue(payloadPlain, Message.class);
+                            String action = (String) message.value(Globals.MSG_ACTION);
+                            if (correctServerKey(serverKey)) {
+                                if (action.equals(Globals.ACTION_REQUEST)) {
+                                    handleRequest(message, aad);
+                                } else if (action.equals(Globals.ACTION_CLEARNOTIF)) {
+                                    if(aad.equals(message.value(Globals.MSG_REQ_ID))){
+                                        handleClearNotification(aad);
+                                    }
+
+                                } else if (action.equals(Globals.ACTION_ADD_PASS)) {
+                                    handleAddPass(message,aad);
+                                }
+                            } else {
+                                Log.e(Globals.TAG, "La serverKey no es correcta");
+                            }
+                        } catch (NoSuchAlgorithmException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchProviderException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchPaddingException e) {
+                            e.printStackTrace();
+                        } catch (InvalidKeyException e) {
+                            e.printStackTrace();
+                        } catch (IllegalBlockSizeException e) {
+                            e.printStackTrace();
+                        } catch (BadPaddingException e) {
+                            e.printStackTrace();
+                        } catch (InvalidAlgorithmParameterException e) {
+                            e.printStackTrace();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        } catch (JsonMappingException e) {
+                            e.printStackTrace();
+                        } catch (JsonParseException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
-                    }else{
-                        Log.e(Globals.TAG,"La serverKey no es correcta");
                     }
+
                 }
             }
         }

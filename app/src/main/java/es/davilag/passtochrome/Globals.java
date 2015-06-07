@@ -30,6 +30,13 @@ public class Globals {
     public static final String MSG_REQ_ID = "req_id";
     public static final String MSG_SERVER_KEY="serverKey";
     public static final String MSG_USER = "usuario";
+    public static final String MSG_PAYLOAD = "payload";
+    public static final String MSG_IV = "iv";
+    public static final String MSG_AAD = "aad";
+    public static final String MSG_NONCE = "nonce";
+    public static final String MSG_TS = "ts";
+    public static final String MSG_STATE = "estado";
+
 
 
     //Constantes para las acciones de GCM
@@ -53,7 +60,13 @@ public class Globals {
 
     //Direccion del servidor, puede cambiar con la entrada de un mensaje.
     private static final String SERVER_IP = "192.168.0.18";
-    public static final String SERVER_DIR = "https://"+SERVER_IP+":8443";
+    public static final String SERVER_DIR_SEC = "https://"+SERVER_IP+":8443";
+    public static final String SERVER_DIR = "http://"+SERVER_IP+":8080";
+
+    //Estados del mensaje de respuesta
+    public static final String MSG_STATE_OK = "OK";
+    public static final String MSG_STATE_NO_PASSWD ="noPass";
+    public static final String MSG_STATE_FAIL = "fail";
 
     //Constantes para pasar parametros por los intents
     public static final String INTENT_REQ_ID = "reqId_INTENT";
@@ -64,6 +77,4 @@ public class Globals {
 
     public static final String INDEX_FRAGMENT_DRAWER = "indexfragment";
 
-    //Constantes de mensajes de error para la respuesta
-    public static final String NO_PASSWD = "noPassword";
 }
