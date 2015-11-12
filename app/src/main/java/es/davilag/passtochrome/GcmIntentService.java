@@ -24,8 +24,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Date;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -48,7 +47,6 @@ public class GcmIntentService extends IntentService {
      */
     public static final int NOTIFICATION_ID = 1;
     private NotificationManager mNotificationManager;
-    private static int nveces = 0;
 
 
     public GcmIntentService() {
@@ -234,10 +232,13 @@ public class GcmIntentService extends IntentService {
             }
         }.execute(reqId, added, mail, nonce);
     }
+
+    private boolean correctTimestamp(long timestamp){
+        return (new Date().getTime()-timestamp)<Globals.TIMEOUT;
+    }
+
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.v(Globals.TAG, "Llega algo: "+nveces);
-        nveces++;
         Bundle extras = intent.getExtras();
         GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
         String messageType = gcm.getMessageType(intent);
@@ -245,12 +246,6 @@ public class GcmIntentService extends IntentService {
             Bundle bundle = intent.getExtras();
             if(GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE.equals(messageType)){
                 if(bundle!=null){
-                    Set<String> keys = bundle.keySet();
-                    Iterator<String> it = keys.iterator();
-                    while (it.hasNext()) {
-                        String key = it.next();
-                        Log.e(Globals.TAG,"[" + key + "=" + bundle.get(key)+"]");
-                    }
                     String aad = bundle.getString(Globals.MSG_AAD);
                     String iv = bundle.getString(Globals.MSG_IV);
                     if(aad!=null && iv!=null && amIRegistered()) {
@@ -258,11 +253,11 @@ public class GcmIntentService extends IntentService {
                         String serverKey = Security.getServerKey(getApplicationContext());
                         try {
                             String payloadPlain = GaloisCounterMode.GCMDecrypt(serverKey, iv, payloadCipher, aad);
-                            Log.v(Globals.TAG, "El payload en plano es: " + payloadPlain);
                             ObjectMapper om = new ObjectMapper();
                             Message message = om.readValue(payloadPlain, Message.class);
                             String action = (String) message.value(Globals.MSG_ACTION);
-                            if (correctServerKey(serverKey)) {
+                            long timestamp = (long)message.value(Globals.MSG_TS);
+                            if (correctServerKey(serverKey)&&correctTimestamp(timestamp)) {
                                 if (action.equals(Globals.ACTION_REQUEST)) {
                                     handleRequest(message, aad);
                                 } else if (action.equals(Globals.ACTION_CLEARNOTIF)) {

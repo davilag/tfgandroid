@@ -238,17 +238,6 @@ public class PTCDbHelper extends SQLiteOpenHelper {
 
     }
 
-    public ArrayList<FilaContenedor> getDomains(SQLiteDatabase db){
-        ArrayList<FilaContenedor> domains = null;
-        Cursor c = db.rawQuery("SELECT DISTINCT "+PTCDbContract.ContainerTable.COLUMN_NAME_DOM+","+PTCDbContract.ContainerTable.COLUMN_NAME_USER+" FROM "+PTCDbContract.ContainerTable.TABLE_NAME,new String[]{});
-        if(c!=null){
-            domains = new ArrayList<>();
-            while(c.moveToNext()){
-                domains.add(new FilaContenedor(null,null,c.getString(0),null));
-            }
-        }
-        return domains;
-    }
    /*
     *
     *
